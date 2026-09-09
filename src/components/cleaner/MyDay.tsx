@@ -1,11 +1,13 @@
 import { MyDayList } from '@/components/cleaner/MyDayList';
 import type { Viewer } from '@/lib/auth';
 import { getMyJobs } from '@/lib/db/myjobs';
-import { formatShortDate, todayInTimezone } from '@/lib/format';
+import { addDaysISO, formatShortDate, todayInTimezone } from '@/lib/format';
 
 export async function MyDay({ viewer }: { viewer: Viewer }) {
   const today = todayInTimezone(viewer.company.timezone);
-  const jobs = await getMyJobs(today, today);
+  // The whole visible window, not just today: it is what gets cached on the
+  // phone, and the week tab has to work with no signal too.
+  const jobs = await getMyJobs(today, addDaysISO(today, 7));
 
   return (
     <div>

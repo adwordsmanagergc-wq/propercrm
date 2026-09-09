@@ -16,7 +16,9 @@ export default async function WeekPage() {
   if (!viewer.isCleaner) redirect('/app/schedule');
 
   const today = todayInTimezone(viewer.company.timezone);
-  const jobs = await getMyJobs(today, addDaysISO(today, 7));
+  // Tomorrow onwards. Today lives on the Today tab, and showing it twice
+  // invites the two lists to disagree while work is still queued offline.
+  const jobs = await getMyJobs(addDaysISO(today, 1), addDaysISO(today, 7));
 
   const byDate = new Map<string, typeof jobs>();
   for (const job of jobs) {
