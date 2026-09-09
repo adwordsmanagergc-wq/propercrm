@@ -16,7 +16,7 @@ import { formatMoney } from '@/lib/money';
 import { routeLengthKm } from '@/lib/route';
 
 // Leaflet touches `window` on import, so it can only load in the browser.
-const RoundMap = dynamic(() => import('@/components/admin/RoundMap').then((m) => m.RoundMap), {
+const RouteMap = dynamic(() => import('@/components/map/RouteMap').then((m) => m.RouteMap), {
   ssr: false,
   loading: () => (
     <div className="h-[28rem] w-full animate-pulse rounded-card border border-grey-200 bg-blue-50 lg:h-[36rem]" />
@@ -60,9 +60,17 @@ export function MapBoard({
             />
           </Card>
         ) : (
-          <RoundMap
-            jobs={jobs}
+          <RouteMap
+            pins={jobs.map((job) => ({
+              id: job.id,
+              lat: job.lat,
+              lng: job.lng,
+              status: job.status,
+              title: job.customerName,
+              subtitle: job.addressLine1,
+            }))}
             start={start}
+            selectedId={selected?.id ?? null}
             onSelect={(id) => setSelected(jobs.find((job) => job.id === id) ?? null)}
           />
         )}

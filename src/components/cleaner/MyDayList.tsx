@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { JobCard } from '@/components/cleaner/JobCard';
+import { MyDayMap } from '@/components/cleaner/MyDayMap';
 import { useSync } from '@/components/cleaner/SyncProvider';
 import { EmptyState } from '@/components/ui/States';
+import { cn } from '@/lib/cn';
 import { SprayIcon } from '@/components/ui/Icons';
 import { cacheJobs, readCachedJobs } from '@/lib/offline/cache';
 import { pending, type QueueEntry } from '@/lib/offline/queue';
@@ -23,6 +25,7 @@ export function MyDayList({ jobs, date }: { jobs: MyJobRow[]; date: string }) {
   const [rows, setRows] = useState(jobs);
   const [fromCache, setFromCache] = useState(false);
   const [queued, setQueued] = useState<QueueEntry[]>([]);
+  const [view, setView] = useState<'list' | 'map'>('list');
 
   useEffect(() => {
     if (jobs.length > 0) {
@@ -91,15 +94,41 @@ export function MyDayList({ jobs, date }: { jobs: MyJobRow[]; date: string }) {
 
   return (
     <>
-      <p className="mb-3 text-base text-grey-500">
-        {remaining === 0 ? 'All done — nice one.' : `${remaining} to go of ${todaysJobs.length}.`}
-        {fromCache ? ' Showing the copy saved on this phone.' : ''}
-      </p>
-      <ul className="space-y-3">
-        {todaysJobs.map((job, index) => (
-          <JobCard key={job.id} job={job} index={index + 1} />
-        ))}
-      </ul>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <p className="text-base text-grey-500">
+          {remaining === 0 ? 'All done — nice one.' : `${remaining} to go of ${todaysJobs.length}.`}
+          {fromCache ? ' Saved on this phone.' : ''}
+        </p>
+
+        {/* Deliberately a toggle inside Today, not a fourth tab — the bottom
+            nav stays at three items. */}
+        <div className="flex shrink-0 rounded-btn border border-grey-200 bg-white p-1">
+          {(['list', 'map'] as const).map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => setView(option)}
+              aria-pressed={view === option}
+              className={cn(
+                'rounded-[6px] px-3.5 py-1.5 text-sm font-semibold capitalize transition-colors',
+                view === option ? 'bg-blue-500 text-white' : 'text-grey-500',
+              )}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {view === 'map' ? (
+        <MyDayMap jobs={todaysJobs} />
+      ) : (
+        <ul className="space-y-3">
+          {todaysJobs.map((job, index) => (
+            <JobCard key={job.id} job={job} index={index + 1} />
+          ))}
+        </ul>
+      )}
     </>
   );
 }

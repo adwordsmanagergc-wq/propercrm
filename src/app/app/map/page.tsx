@@ -8,7 +8,6 @@ import { getCleaners, getCompany } from '@/lib/db/staff';
 import { photoPaths, toJobView } from '@/lib/db/views';
 import { todayInTimezone } from '@/lib/format';
 import { cn } from '@/lib/cn';
-import 'leaflet/dist/leaflet.css';
 
 export const metadata: Metadata = { title: 'Round map' };
 

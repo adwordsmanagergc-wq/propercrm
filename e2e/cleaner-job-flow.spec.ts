@@ -55,6 +55,20 @@ test.describe('the cleaner job flow', () => {
     await expect(page.locator('body')).not.toContainText('£');
   });
 
+  test('a cleaner can see their day on a map, in route order', async ({ page }) => {
+    await signIn(page);
+
+    await page.getByRole('button', { name: 'map' }).click();
+    await expect(page.getByRole('application', { name: "Map of the day's jobs" })).toBeVisible();
+
+    // Still no prices once the map is open.
+    await expect(page.locator('body')).not.toContainText('£');
+
+    // And back to the list, which is what works with no signal.
+    await page.getByRole('button', { name: 'list' }).click();
+    await expect(page.getByRole('link', { name: /Start job|Carry on|View/ }).first()).toBeVisible();
+  });
+
   test('a job cannot be completed without a before and an after photo', async ({ page }) => {
     await signIn(page);
 

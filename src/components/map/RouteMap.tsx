@@ -2,9 +2,24 @@
 
 import { useEffect, useRef } from 'react';
 import type { Map as LeafletMap, Marker, Polyline } from 'leaflet';
-import type { JobView } from '@/lib/db/views';
+import type { JobStatus } from '@/lib/types/database';
+import 'leaflet/dist/leaflet.css';
 
-const STATUS_COLOUR: Record<string, string> = {
+/**
+ * The least a pin needs. Kept deliberately neutral so the office map and the
+ * cleaner's map share this component — the cleaner's data has no price on it,
+ * and nothing here can reintroduce one.
+ */
+export interface MapPin {
+  id: string;
+  lat: number | null;
+  lng: number | null;
+  status: JobStatus;
+  title: string;
+  subtitle: string;
+}
+
+const STATUS_COLOUR: Record<JobStatus, string> = {
   scheduled: 'var(--blue-500)',
   in_progress: 'var(--warning)',
   completed: 'var(--success)',
@@ -13,17 +28,22 @@ const STATUS_COLOUR: Record<string, string> = {
 };
 
 /**
- * The day plotted out. Leaflet is loaded on demand rather than bundled, and
- * uses OpenStreetMap tiles so there is no map key to manage.
+ * The day plotted out: numbered pins in route order, coloured by status, with
+ * the run between them drawn in. Leaflet is loaded on demand rather than
+ * bundled, and uses OpenStreetMap tiles so there is no map key to manage.
  */
-export function RoundMap({
-  jobs,
+export function RouteMap({
+  pins,
   start,
   onSelect,
+  selectedId,
+  className = 'h-[28rem] w-full rounded-card border border-grey-200 bg-blue-50 lg:h-[36rem]',
 }: {
-  jobs: JobView[];
+  pins: MapPin[];
   start: { lat: number; lng: number } | null;
-  onSelect: (jobId: string) => void;
+  onSelect: (id: string) => void;
+  selectedId?: string | null;
+  className?: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
@@ -50,25 +70,28 @@ export function RoundMap({
       layersRef.current.forEach((layer) => layer.remove());
       layersRef.current = [];
 
-      const located = jobs.filter(
-        (job): job is JobView & { lat: number; lng: number } =>
-          typeof job.lat === 'number' && typeof job.lng === 'number',
+      const located = pins.filter(
+        (pin): pin is MapPin & { lat: number; lng: number } =>
+          typeof pin.lat === 'number' && typeof pin.lng === 'number',
       );
 
-      located.forEach((job, index) => {
-        const marker = L.marker([job.lat, job.lng], {
+      located.forEach((pin, index) => {
+        const selected = pin.id === selectedId;
+        const size = selected ? 40 : 30;
+        const marker = L.marker([pin.lat, pin.lng], {
           icon: L.divIcon({
             className: '',
-            html: `<span style="display:grid;place-items:center;width:30px;height:30px;border-radius:999px;background:${
-              STATUS_COLOUR[job.status] ?? 'var(--blue-500)'
-            };color:#fff;font:600 13px/1 Inter,system-ui,sans-serif;box-shadow:0 2px 8px rgba(8,53,95,.35);border:2px solid #fff">${index + 1}</span>`,
-            iconSize: [30, 30],
-            iconAnchor: [15, 15],
+            html: `<span style="display:grid;place-items:center;width:${size}px;height:${size}px;border-radius:999px;background:${
+              STATUS_COLOUR[pin.status] ?? 'var(--blue-500)'
+            };color:#fff;font:600 ${selected ? 17 : 13}px/1 Inter,system-ui,sans-serif;box-shadow:0 2px 8px rgba(8,53,95,.35);border:${selected ? 3 : 2}px solid #fff">${index + 1}</span>`,
+            iconSize: [size, size],
+            iconAnchor: [size / 2, size / 2],
           }),
-          title: `${job.customerName} — ${job.addressLine1}`,
+          title: `${pin.title} — ${pin.subtitle}`,
+          zIndexOffset: selected ? 1000 : 0,
         })
           .addTo(map)
-          .on('click', () => selectRef.current(job.id));
+          .on('click', () => selectRef.current(pin.id));
         layersRef.current.push(marker);
       });
 
@@ -87,7 +110,7 @@ export function RoundMap({
 
       const path: [number, number][] = [
         ...(start ? ([[start.lat, start.lng]] as [number, number][]) : []),
-        ...located.map((job) => [job.lat, job.lng] as [number, number]),
+        ...located.map((pin) => [pin.lat, pin.lng] as [number, number]),
       ];
 
       if (path.length > 1) {
@@ -111,7 +134,7 @@ export function RoundMap({
     return () => {
       cancelled = true;
     };
-  }, [jobs, start]);
+  }, [pins, start, selectedId]);
 
   useEffect(
     () => () => {
@@ -126,7 +149,7 @@ export function RoundMap({
       ref={containerRef}
       role="application"
       aria-label="Map of the day's jobs"
-      className="h-[28rem] w-full rounded-card border border-grey-200 bg-blue-50 lg:h-[36rem]"
+      className={className}
     />
   );
 }
