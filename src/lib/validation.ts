@@ -18,6 +18,21 @@ const optionalText = (max: number) =>
 
 export const uuid = z.string().uuid('Not a valid id');
 
+/**
+ * HTML checkboxes send "on" (or nothing at all), and a hidden field sends the
+ * string "false" — which `z.coerce.boolean()` would read as true. This reads
+ * form values the way forms actually send them.
+ */
+const checkbox = (fallback: boolean) =>
+  z
+    .union([z.boolean(), z.string()])
+    .optional()
+    .transform((value) => {
+      if (value === undefined || value === '') return fallback;
+      if (typeof value === 'boolean') return value;
+      return value === 'true' || value === 'on' || value === '1' || value === 'yes';
+    });
+
 export const roleSchema = z.enum(['owner', 'manager', 'cleaner']);
 export const frequencySchema = z.enum(['weekly', 'fortnightly', '4weekly', '8weekly', 'one_off']);
 export const skipReasonSchema = z.enum([
@@ -88,9 +103,9 @@ export const customerSchema = z.object({
   lng: z.coerce.number().min(-180).max(180).nullable().optional(),
   access_notes: optionalText(600),
   gate_code: optionalText(40),
-  dog_on_site: z.coerce.boolean().default(false),
+  dog_on_site: checkbox(false),
   preferred_contact: z.enum(['phone', 'sms', 'email', 'none']).default('phone'),
-  is_active: z.coerce.boolean().default(true),
+  is_active: checkbox(true),
   notes: optionalText(2000),
 });
 
@@ -106,7 +121,7 @@ export const propertySchema = z.object({
   lng: z.coerce.number().min(-180).max(180).nullable().optional(),
   window_count: z.coerce.number().int().min(0).max(500).nullable().optional(),
   storeys: z.coerce.number().int().min(1).max(10).nullable().optional(),
-  has_conservatory: z.coerce.boolean().default(false),
+  has_conservatory: checkbox(false),
   price: z.coerce.number().min(0).max(100000).nullable().optional(),
   access_notes: optionalText(600),
 });
@@ -131,7 +146,7 @@ export const roundSchema = z.object({
     .transform((v) => (v === '' ? null : v))
     .nullable()
     .optional(),
-  is_active: z.coerce.boolean().default(true),
+  is_active: checkbox(true),
   instructions: optionalText(1000),
   /** Editing a round: does it change future jobs only, or every unstarted one? */
   applyTo: z.enum(['future', 'all_unstarted']).default('future'),
@@ -169,7 +184,7 @@ export const moveJobSchema = z.object({
 export const bulkAssignSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   cleanerId: uuid,
-  onlyUnassigned: z.coerce.boolean().default(true),
+  onlyUnassigned: checkbox(true),
 });
 
 export const startJobSchema = z.object({
@@ -236,7 +251,7 @@ export const inviteSchema = z.object({
 export const staffUpdateSchema = z.object({
   profileId: uuid,
   role: roleSchema.optional(),
-  is_active: z.coerce.boolean().optional(),
+  is_active: checkbox(true).optional(),
 });
 
 export const settingsSchema = z.object({
