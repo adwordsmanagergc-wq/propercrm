@@ -1,4 +1,4 @@
-import { STORE_CACHE, get, isSupported, put } from '@/lib/offline/db';
+import { STORE_CACHE, clear, get, isSupported, put } from '@/lib/offline/db';
 import type { MyJobRow } from '@/lib/types/database';
 
 /**
@@ -28,4 +28,29 @@ export async function readCachedJobs(): Promise<{ jobs: MyJobRow[]; savedAt: num
   const record = await get<CacheRecord<MyJobRow[]>>(STORE_CACHE, JOBS_KEY);
   if (!record) return null;
   return { jobs: record.value, savedAt: record.savedAt };
+}
+
+/**
+ * Wipes the round cached on this phone and the pages the service worker kept.
+ * Called on sign-out: a shared van phone must not hand the next person the
+ * previous cleaner's customer list, offline or not.
+ *
+ * The outbound queue is deliberately left alone — it holds work that has not
+ * reached the office yet, and losing it is the one thing this app must never do.
+ */
+export async function clearOfflineData(): Promise<void> {
+  if (isSupported()) {
+    try {
+      await clear(STORE_CACHE);
+    } catch {
+      // A locked database must not stop someone signing out.
+    }
+  }
+
+  try {
+    const registration = await navigator.serviceWorker?.ready;
+    registration?.active?.postMessage({ type: 'proper-crm:clear-data' });
+  } catch {
+    // No service worker: nothing cached to clear.
+  }
 }

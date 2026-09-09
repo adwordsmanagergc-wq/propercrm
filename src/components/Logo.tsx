@@ -21,7 +21,9 @@ export function Wordmark({ className }: { className?: string }) {
   return (
     <span className={cn('flex items-center gap-2.5', className)}>
       <LogoMark />
-      <span className="text-lg font-semibold tracking-tight text-grey-900">Proper CRM</span>
+      <span className="whitespace-nowrap text-lg font-semibold tracking-tight text-grey-900">
+        Proper CRM
+      </span>
     </span>
   );
 }

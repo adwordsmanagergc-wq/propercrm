@@ -27,7 +27,7 @@ export const buttonClasses = (
   className?: string,
 ) =>
   cn(
-    'inline-flex items-center justify-center rounded-btn font-semibold transition-colors',
+    'inline-flex items-center justify-center whitespace-nowrap rounded-btn font-semibold transition-colors',
     'disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none',
     'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700',
     VARIANTS[variant],

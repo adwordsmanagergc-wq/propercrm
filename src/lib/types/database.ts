@@ -397,7 +397,6 @@ export type Database = {
         Args: { p_template: string; p_until: string };
         Returns: number;
       };
-      recalc_invoice_totals: { Args: { p_invoice: string }; Returns: undefined };
     };
     Enums: {
       user_role: UserRole;

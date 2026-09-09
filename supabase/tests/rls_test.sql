@@ -289,6 +289,53 @@ end;
 $$;
 
 -- ---------------------------------------------------------------------------
+-- 5b. SECURITY DEFINER functions are not a back door.
+-- ---------------------------------------------------------------------------
+do $$
+declare
+  v_dave     uuid := '22222222-2222-4222-8222-222222222223';
+  v_rival    uuid := '99999999-9999-4999-8999-999999999999';
+  v_rtpl     uuid;
+  v_invoice  uuid;
+begin
+  raise notice 'Function permissions';
+
+  insert into public.job_templates (company_id, customer_id, price, frequency, anchor_date)
+  values (v_rival, '77777777-7777-4777-8777-777777777771', 20, 'weekly', current_date)
+  returning id into v_rtpl;
+
+  select id into v_invoice from public.invoices where company_id = v_rival limit 1;
+
+  perform pg_temp.as_user(v_dave, 'dave@propercrm.test');
+
+  perform pg_temp.denied(
+    format('select public.generate_jobs_for_template(%L, current_date + 30)', v_rtpl),
+    'generating jobs for another company''s round');
+  perform pg_temp.denied(
+    format('select public.topup_company_schedule(%L, 8)', v_rival),
+    'topping up another company''s diary');
+  perform pg_temp.denied(
+    'select public.topup_all_schedules(8)',
+    'a cleaner topping up every company');
+  perform pg_temp.denied(
+    format('select public.recalc_invoice_totals(%L)', v_invoice),
+    'a cleaner recalculating an invoice');
+  perform pg_temp.denied(
+    format('select public.next_invoice_number(%L)', v_rival),
+    'a cleaner burning another company''s invoice numbers');
+  perform pg_temp.denied(
+    'select public.mark_overdue_invoices()',
+    'a cleaner running the overdue sweep');
+
+  reset role;
+
+  perform pg_temp.ok(
+    (select count(*) from public.jobs where template_id = v_rtpl) = 0,
+    'no jobs were created for the rival round');
+end;
+$$;
+
+-- ---------------------------------------------------------------------------
 -- 6. anon can read nothing.
 -- ---------------------------------------------------------------------------
 do $$

@@ -100,4 +100,9 @@ self.addEventListener('sync', (event) => {
 
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'proper-crm:skip-waiting') self.skipWaiting();
+
+  // Sign-out: drop every cached page. The shell assets are public and stay.
+  if (event.data?.type === 'proper-crm:clear-data') {
+    event.waitUntil(caches.delete(DATA_CACHE));
+  }
 });
