@@ -21,7 +21,7 @@ import { JobStatusPill, SKIP_REASON_LABELS } from '@/components/ui/Pill';
 import type { JobView } from '@/lib/db/views';
 import { formatDate, formatDuration, formatTime, shortAddress } from '@/lib/format';
 import { formatMoney } from '@/lib/money';
-import type { SkipReason } from '@/lib/types/database';
+import type { JobStatus, SkipReason } from '@/lib/types/database';
 
 interface Staff {
   id: string;
@@ -32,10 +32,13 @@ export function JobDrawer({
   job,
   staff,
   onClose,
+  onOptimisticStatus,
 }: {
   job: JobView | null;
   staff: Staff[];
   onClose: () => void;
+  /** Lets the list show the new status before the server has confirmed it. */
+  onOptimisticStatus?: (patch: { jobId: string; status: JobStatus }) => void;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -46,9 +49,11 @@ export function JobDrawer({
 
   if (!job) return null;
 
-  function act(work: () => Promise<{ ok: boolean; error?: string }>) {
+  function act(work: () => Promise<{ ok: boolean; error?: string }>, optimisticStatus?: JobStatus) {
     setError(null);
     startTransition(async () => {
+      if (optimisticStatus && job)
+        onOptimisticStatus?.({ jobId: job.id, status: optimisticStatus });
       const result = await work();
       if (!result.ok) setError(result.error ?? 'That did not work');
       else router.refresh();
@@ -79,7 +84,7 @@ export function JobDrawer({
             <Button
               variant="success"
               disabled={pending}
-              onClick={() => act(() => completeJobAction({ jobId: job.id }))}
+              onClick={() => act(() => completeJobAction({ jobId: job.id }), 'completed')}
             >
               Mark done
             </Button>
@@ -88,7 +93,9 @@ export function JobDrawer({
             <Button
               variant="danger"
               disabled={pending}
-              onClick={() => act(() => skipJobAction({ jobId: job.id, reason: skipReason }))}
+              onClick={() =>
+                act(() => skipJobAction({ jobId: job.id, reason: skipReason }), 'skipped')
+              }
             >
               Mark missed
             </Button>
@@ -97,7 +104,7 @@ export function JobDrawer({
             <Button
               variant="ghost"
               disabled={pending}
-              onClick={() => act(() => cancelJobAction({ jobId: job.id }))}
+              onClick={() => act(() => cancelJobAction({ jobId: job.id }), 'cancelled')}
             >
               Cancel
             </Button>

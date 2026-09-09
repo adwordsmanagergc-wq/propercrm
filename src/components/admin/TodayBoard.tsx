@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useOptimistic, useState } from 'react';
 import { JobDrawer } from '@/components/admin/JobDrawer';
 import { PhotoThumb } from '@/components/admin/JobPhotos';
 import { Card, CardHeader } from '@/components/ui/Card';
@@ -9,6 +9,7 @@ import { JobStatusPill } from '@/components/ui/Pill';
 import { EmptyState } from '@/components/ui/States';
 import type { JobView } from '@/lib/db/views';
 import { formatMoney } from '@/lib/money';
+import type { JobStatus } from '@/lib/types/database';
 
 interface Group {
   id: string | null;
@@ -23,7 +24,26 @@ export function TodayBoard({
   groups: Group[];
   staff: { id: string; full_name: string }[];
 }) {
-  const [selected, setSelected] = useState<JobView | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  /**
+   * Status changes land on screen the moment they are clicked. React discards
+   * the optimistic value when the transition ends, so a refused change rolls
+   * back on its own and the drawer shows why.
+   */
+  const [optimisticGroups, applyStatus] = useOptimistic(
+    groups,
+    (current: Group[], patch: { jobId: string; status: JobStatus }) =>
+      current.map((group) => ({
+        ...group,
+        jobs: group.jobs.map((job) =>
+          job.id === patch.jobId ? { ...job, status: patch.status } : job,
+        ),
+      })),
+  );
+
+  const selected =
+    optimisticGroups.flatMap((group) => group.jobs).find((job) => job.id === selectedId) ?? null;
 
   if (groups.length === 0) {
     return (
@@ -39,7 +59,7 @@ export function TodayBoard({
   return (
     <>
       <div className="space-y-5">
-        {groups.map((group) => {
+        {optimisticGroups.map((group) => {
           const done = group.jobs.filter((job) => job.status === 'completed').length;
           return (
             <Card key={group.id ?? 'unassigned'}>
@@ -57,7 +77,7 @@ export function TodayBoard({
                   <li key={job.id}>
                     <button
                       type="button"
-                      onClick={() => setSelected(job)}
+                      onClick={() => setSelectedId(job.id)}
                       className="flex w-full items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-blue-50"
                     >
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-pill bg-blue-100 text-sm font-semibold tabular-nums text-blue-700">
@@ -90,7 +110,12 @@ export function TodayBoard({
         })}
       </div>
 
-      <JobDrawer job={selected} staff={staff} onClose={() => setSelected(null)} />
+      <JobDrawer
+        job={selected}
+        staff={staff}
+        onClose={() => setSelectedId(null)}
+        onOptimisticStatus={applyStatus}
+      />
     </>
   );
 }
