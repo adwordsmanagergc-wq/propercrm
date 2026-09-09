@@ -1,9 +1,17 @@
 {
-  "extends": ["next/core-web-vitals", "prettier"],
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "extends": ["next/core-web-vitals", "plugin:@typescript-eslint/recommended", "prettier"],
   "rules": {
-    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
+    ],
     "@typescript-eslint/no-explicit-any": "error",
-    "no-console": ["warn", { "allow": ["warn", "error"] }]
+    "@typescript-eslint/consistent-type-imports": ["error", { "prefer": "type-imports" }],
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "eqeqeq": ["error", "smart"]
   },
-  "ignorePatterns": ["node_modules", ".next", "coverage", "e2e"]
+  "ignorePatterns": ["node_modules", ".next", "coverage", "e2e", "*.mjs", "public/sw.js"]
 }

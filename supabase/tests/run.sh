@@ -70,6 +70,11 @@ done
 echo "→ seed"
 "${PSQL[@]}" -f "$ROOT/supabase/seed.sql" >/dev/null
 
+if [ -n "${VECTORS_OUT:-}" ]; then
+  echo "→ recurrence vectors → $VECTORS_OUT"
+  "${PSQL[@]}" -v "out=$VECTORS_OUT" -f "$ROOT/supabase/tests/recurrence_vectors.sql" >/dev/null
+fi
+
 echo "→ rls isolation tests"
 "${PSQL[@]}" -f "$ROOT/supabase/tests/rls_test.sql"
 

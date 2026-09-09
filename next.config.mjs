@@ -4,7 +4,9 @@ const nextConfig = {
   poweredByHeader: false,
   eslint: { dirs: ['src'] },
   images: {
-    remotePatterns: [{ protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/**' }],
+    remotePatterns: [
+      { protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/**' },
+    ],
   },
   async headers() {
     return [
