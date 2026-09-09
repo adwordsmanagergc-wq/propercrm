@@ -240,23 +240,85 @@ export type MyCompanyRow = {
   trial_ends_at: string;
 };
 
-type Table<R> = { Row: R; Insert: Partial<R>; Update: Partial<R>; Relationships: [] };
+/**
+ * Foreign keys, spelled out so embedded selects (`customer:customers(...)`)
+ * type-check. Names follow Postgres's default `<table>_<column>_fkey`.
+ */
+type Rel<FK extends string, Column extends string, Referenced extends string> = {
+  foreignKeyName: FK;
+  columns: [Column];
+  isOneToOne: false;
+  referencedRelation: Referenced;
+  referencedColumns: ['id'];
+};
+
+type Table<R, Rels extends Rel<string, string, string>[] = []> = {
+  Row: R;
+  Insert: Partial<R>;
+  Update: Partial<R>;
+  Relationships: Rels;
+};
 type View<R> = { Row: R; Relationships: [] };
+
+type CompanyRel<T extends string> = Rel<`${T}_company_id_fkey`, 'company_id', 'companies'>;
 
 export type Database = {
   public: {
     Tables: {
       companies: Table<CompanyRow>;
-      profiles: Table<ProfileRow>;
-      invites: Table<InviteRow>;
-      customers: Table<CustomerRow>;
-      properties: Table<PropertyRow>;
-      job_templates: Table<JobTemplateRow>;
-      jobs: Table<JobRow>;
-      job_photos: Table<JobPhotoRow>;
-      invoices: Table<InvoiceRow>;
-      invoice_lines: Table<InvoiceLineRow>;
-      activity_log: Table<ActivityLogRow>;
+      profiles: Table<ProfileRow, [CompanyRel<'profiles'>]>;
+      invites: Table<
+        InviteRow,
+        [CompanyRel<'invites'>, Rel<'invites_invited_by_fkey', 'invited_by', 'profiles'>]
+      >;
+      customers: Table<CustomerRow, [CompanyRel<'customers'>]>;
+      properties: Table<
+        PropertyRow,
+        [CompanyRel<'properties'>, Rel<'properties_customer_id_fkey', 'customer_id', 'customers'>]
+      >;
+      job_templates: Table<
+        JobTemplateRow,
+        [
+          CompanyRel<'job_templates'>,
+          Rel<'job_templates_customer_id_fkey', 'customer_id', 'customers'>,
+          Rel<'job_templates_property_id_fkey', 'property_id', 'properties'>,
+          Rel<'job_templates_assigned_cleaner_fkey', 'assigned_cleaner', 'profiles'>,
+        ]
+      >;
+      jobs: Table<
+        JobRow,
+        [
+          CompanyRel<'jobs'>,
+          Rel<'jobs_customer_id_fkey', 'customer_id', 'customers'>,
+          Rel<'jobs_property_id_fkey', 'property_id', 'properties'>,
+          Rel<'jobs_template_id_fkey', 'template_id', 'job_templates'>,
+          Rel<'jobs_assigned_to_fkey', 'assigned_to', 'profiles'>,
+        ]
+      >;
+      job_photos: Table<
+        JobPhotoRow,
+        [
+          CompanyRel<'job_photos'>,
+          Rel<'job_photos_job_id_fkey', 'job_id', 'jobs'>,
+          Rel<'job_photos_uploaded_by_fkey', 'uploaded_by', 'profiles'>,
+        ]
+      >;
+      invoices: Table<
+        InvoiceRow,
+        [CompanyRel<'invoices'>, Rel<'invoices_customer_id_fkey', 'customer_id', 'customers'>]
+      >;
+      invoice_lines: Table<
+        InvoiceLineRow,
+        [
+          CompanyRel<'invoice_lines'>,
+          Rel<'invoice_lines_invoice_id_fkey', 'invoice_id', 'invoices'>,
+          Rel<'invoice_lines_job_id_fkey', 'job_id', 'jobs'>,
+        ]
+      >;
+      activity_log: Table<
+        ActivityLogRow,
+        [CompanyRel<'activity_log'>, Rel<'activity_log_actor_id_fkey', 'actor_id', 'profiles'>]
+      >;
     };
     Views: {
       my_jobs: View<MyJobRow>;

@@ -58,3 +58,22 @@ export function initials(name: string): string {
 export function firstName(name: string): string {
   return name.trim().split(/\s+/)[0] ?? name;
 }
+
+/**
+ * Today's date in the company's own timezone. A round in Europe/London must
+ * not roll over at midnight UTC when the clocks are on BST.
+ */
+export function todayInTimezone(timeZone: string): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+}
+
+export function addDaysISO(isoDate: string, days: number): string {
+  const date = parseISO(isoDate);
+  date.setDate(date.getDate() + days);
+  return format(date, 'yyyy-MM-dd');
+}
