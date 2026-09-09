@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { redirect } from 'next/navigation';
+import { readPublicEnv } from '@/lib/env';
 import { createClient } from '@/lib/supabase/server';
 import type { MyCompanyRow, ProfileRow } from '@/lib/types/database';
 
@@ -18,6 +19,12 @@ export interface Viewer {
  * viewer is costs one round trip, not two.
  */
 export const getViewer = cache(async (): Promise<Viewer | null> => {
+  // The marketing page asks who is viewing so it can offer "Open Proper CRM"
+  // instead of "Sign in". On a deploy with no Supabase configured that must
+  // answer "nobody", not bring the front page down. Authenticated routes never
+  // reach here — the middleware sends them to /setup-required first.
+  if (!readPublicEnv().ok) return null;
+
   const supabase = createClient();
   const {
     data: { user },

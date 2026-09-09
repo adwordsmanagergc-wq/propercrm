@@ -210,7 +210,10 @@ placeholder.
 
 1. Push the repo and import it in Vercel.
 2. Add the environment variables from the table above to every environment.
-   Set `NEXT_PUBLIC_SITE_URL` to the deployment's own URL.
+   Set `NEXT_PUBLIC_SITE_URL` to the deployment's own URL. **`NEXT_PUBLIC_*`
+   variables are inlined at build time**, so after adding them you must
+   redeploy — restarting is not enough. A deploy without them serves
+   `/setup-required`, which names what is missing.
 3. Add that URL's `/auth/callback` to the Supabase redirect allowlist.
 4. `vercel.json` registers a nightly cron on `/api/cron/topup`, which tops the
    diary up eight weeks ahead and marks overdue invoices. Vercel sends
