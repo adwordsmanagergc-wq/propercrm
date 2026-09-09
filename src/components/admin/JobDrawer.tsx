@@ -10,11 +10,12 @@ import {
   saveJobNoteAction,
   skipJobAction,
   startJobAction,
+  updateJobAction,
 } from '@/app/actions/jobs';
 import { PhotoGrid } from '@/components/admin/JobPhotos';
 import { Button } from '@/components/ui/Button';
 import { Drawer } from '@/components/ui/Drawer';
-import { Notice, Select, Textarea } from '@/components/ui/Field';
+import { Field, Input, Notice, Select, Textarea } from '@/components/ui/Field';
 import { DogIcon, KeyIcon } from '@/components/ui/Icons';
 import { JobStatusPill, SKIP_REASON_LABELS } from '@/components/ui/Pill';
 import type { JobView } from '@/lib/db/views';
@@ -41,6 +42,7 @@ export function JobDrawer({
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState('');
   const [skipReason, setSkipReason] = useState<SkipReason>('no_access');
+  const [editing, setEditing] = useState(false);
 
   if (!job) return null;
 
@@ -162,6 +164,27 @@ export function JobDrawer({
         </dl>
 
         <div>
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold">This visit</h3>
+            <Button variant="ghost" size="sm" onClick={() => setEditing((open) => !open)}>
+              {editing ? 'Done' : 'Change'}
+            </Button>
+          </div>
+          {editing ? (
+            <JobEditFields
+              job={job}
+              pending={pending}
+              onSave={(values) => act(() => updateJobAction(values))}
+            />
+          ) : (
+            <p className="text-sm text-grey-500">
+              {formatDate(job.scheduledDate)} · {formatMoney(job.price)} ·{' '}
+              {formatDuration(job.durationMins)}
+            </p>
+          )}
+        </div>
+
+        <div>
           <h3 className="mb-2 text-sm font-semibold">Who is doing it</h3>
           <Select
             aria-label="Assign this job"
@@ -240,6 +263,78 @@ function Detail({ label, children }: { label: string; children: React.ReactNode 
     <div>
       <dt className="text-grey-500">{label}</dt>
       <dd className="mt-0.5 font-medium text-grey-900">{children}</dd>
+    </div>
+  );
+}
+
+/** The small edit form behind "Change" — date, price and how long it takes. */
+function JobEditFields({
+  job,
+  pending,
+  onSave,
+}: {
+  job: JobView;
+  pending: boolean;
+  onSave: (values: {
+    jobId: string;
+    scheduled_date: string;
+    price: number;
+    duration_mins: number;
+  }) => void;
+}) {
+  const [date, setDate] = useState(job.scheduledDate);
+  const [price, setPrice] = useState(String(job.price));
+  const [duration, setDuration] = useState(String(job.durationMins));
+
+  return (
+    <div className="space-y-3 rounded-card border border-grey-200 p-3">
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Date" htmlFor="job-date">
+          <Input
+            id="job-date"
+            type="date"
+            value={date}
+            onChange={(event) => setDate(event.target.value)}
+          />
+        </Field>
+        <Field label="Price" htmlFor="job-price">
+          <Input
+            id="job-price"
+            type="number"
+            step="0.01"
+            min="0"
+            inputMode="decimal"
+            value={price}
+            onChange={(event) => setPrice(event.target.value)}
+          />
+        </Field>
+      </div>
+      <Field label="How long it takes" htmlFor="job-duration" hint="Minutes.">
+        <Input
+          id="job-duration"
+          type="number"
+          min="5"
+          max="600"
+          step="5"
+          inputMode="numeric"
+          value={duration}
+          onChange={(event) => setDuration(event.target.value)}
+        />
+      </Field>
+      <Button
+        variant="secondary"
+        disabled={pending}
+        onClick={() =>
+          onSave({
+            jobId: job.id,
+            scheduled_date: date,
+            price: Number(price),
+            duration_mins: Number(duration),
+          })
+        }
+      >
+        Save this visit
+      </Button>
     </div>
   );
 }

@@ -33,7 +33,7 @@ export function Pill({
   );
 }
 
-export const JOB_STATUS_LABELS: Record<JobStatus, string> = {
+const JOB_STATUS_LABELS: Record<JobStatus, string> = {
   scheduled: 'To do',
   in_progress: 'On site',
   completed: 'Done',
@@ -53,7 +53,7 @@ export function JobStatusPill({ status }: { status: JobStatus }) {
   return <Pill tone={JOB_STATUS_TONES[status]}>{JOB_STATUS_LABELS[status]}</Pill>;
 }
 
-export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
+const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
   draft: 'Draft',
   sent: 'Sent',
   paid: 'Paid',

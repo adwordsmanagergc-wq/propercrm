@@ -10,7 +10,7 @@ import type { JobStatus } from '@/lib/types/database';
 // TypeScript widens `'a' + 'b'` to `string`, and the select parser only
 // resolves embedded relations from a literal type.
 // prettier-ignore
-export const JOB_SELECT = 'id, scheduled_date, sequence, status, price, duration_mins, notes, skip_reason, invoiced, started_at, completed_at, customer_id, property_id, template_id, assigned_to, customer:customers(id, name, phone, address_line1, address_line2, city, postcode, lat, lng, access_notes, gate_code, dog_on_site), property:properties(id, label, address_line1, postcode, lat, lng), assignee:profiles!jobs_assigned_to_fkey(id, full_name), photos:job_photos(id, kind, storage_path, taken_at)';
+const JOB_SELECT = 'id, scheduled_date, sequence, status, price, duration_mins, notes, skip_reason, invoiced, started_at, completed_at, customer_id, property_id, template_id, assigned_to, customer:customers(id, name, phone, address_line1, address_line2, city, postcode, lat, lng, access_notes, gate_code, dog_on_site), property:properties(id, label, address_line1, postcode, lat, lng), assignee:profiles!jobs_assigned_to_fkey(id, full_name), photos:job_photos(id, kind, storage_path, taken_at)';
 
 export type AdminJob = Awaited<ReturnType<typeof getJobsForRange>>[number];
 
@@ -32,13 +32,6 @@ export async function getJobsForDay(date: string) {
   return getJobsForRange(date, date);
 }
 
-export async function getJob(id: string) {
-  const supabase = createClient();
-  const { data, error } = await supabase.from('jobs').select(JOB_SELECT).eq('id', id).maybeSingle();
-  if (error) throw new Error(error.message);
-  return data;
-}
-
 export async function getCustomerJobHistory(customerId: string, limit = 60) {
   const supabase = createClient();
   const { data, error } = await supabase
@@ -52,7 +45,7 @@ export async function getCustomerJobHistory(customerId: string, limit = 60) {
   return data ?? [];
 }
 
-export interface JobCounts {
+interface JobCounts {
   scheduled: number;
   in_progress: number;
   completed: number;

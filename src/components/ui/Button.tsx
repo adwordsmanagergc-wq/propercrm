@@ -21,7 +21,7 @@ const SIZES: Record<ButtonSize, string> = {
   xl: 'h-16 px-6 text-xl w-full gap-3',
 };
 
-export const buttonClasses = (
+const buttonClasses = (
   variant: ButtonVariant = 'primary',
   size: ButtonSize = 'md',
   className?: string,

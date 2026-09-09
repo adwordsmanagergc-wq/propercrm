@@ -15,7 +15,7 @@ export function isSupported(): boolean {
   return typeof indexedDB !== 'undefined';
 }
 
-export function openDb(): Promise<IDBDatabase> {
+function openDb(): Promise<IDBDatabase> {
   if (dbPromise) return dbPromise;
 
   dbPromise = new Promise((resolve, reject) => {

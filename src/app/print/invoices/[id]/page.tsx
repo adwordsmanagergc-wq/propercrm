@@ -6,7 +6,7 @@ import { requireStaff } from '@/lib/auth';
 import { getInvoice } from '@/lib/db/invoices';
 import { getCompany } from '@/lib/db/staff';
 import { formatDate } from '@/lib/format';
-import { lineTotal } from '@/lib/invoice';
+import { invoiceTotals, lineTotal } from '@/lib/invoice';
 import { formatMoney } from '@/lib/money';
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
@@ -24,6 +24,9 @@ export default async function InvoicePrintPage({ params }: { params: { id: strin
   if (!invoice || !company) notFound();
 
   const lines = [...(invoice.lines ?? [])].sort((a, b) => a.position - b.position);
+  const totals = invoiceTotals(
+    lines.map((line) => ({ quantity: Number(line.quantity), unit_price: Number(line.unit_price) })),
+  );
   const customer = invoice.customer;
 
   return (
@@ -150,7 +153,7 @@ export default async function InvoicePrintPage({ params }: { params: { id: strin
                 Total due
               </td>
               <td className="py-4 text-right text-xl font-semibold tabular-nums">
-                {formatMoney(Number(invoice.total))}
+                {formatMoney(totals.total)}
               </td>
             </tr>
           </tfoot>

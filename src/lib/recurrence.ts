@@ -6,7 +6,7 @@ import type { Frequency } from '@/lib/types/database';
  * supabase/migrations/20240101000300_scheduling.sql. If you change one, change
  * both — the "next 5 dates" preview must match what the database creates.
  */
-export const FREQUENCY_DAYS: Record<Frequency, number | null> = {
+const FREQUENCY_DAYS: Record<Frequency, number | null> = {
   weekly: 7,
   fortnightly: 14,
   '4weekly': 28,
@@ -32,7 +32,7 @@ export function isoDay(date: Date): number {
   return d === 0 ? 7 : d;
 }
 
-export function toDate(value: Date | string): Date {
+function toDate(value: Date | string): Date {
   return typeof value === 'string' ? parseISO(value) : value;
 }
 

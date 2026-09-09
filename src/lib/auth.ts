@@ -64,12 +64,6 @@ export async function requireStaff(): Promise<Viewer> {
   return viewer;
 }
 
-export async function requireOwner(): Promise<Viewer> {
-  const viewer = await requireViewer();
-  if (!viewer.isOwner) redirect('/app');
-  return viewer;
-}
-
 /**
  * Server Action guard. Actions never trust the form — they re-check the
  * caller's role before writing anything.

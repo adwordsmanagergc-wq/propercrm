@@ -108,14 +108,3 @@ export async function getRounds(customerId?: string) {
   if (error) throw new Error(error.message);
   return data ?? [];
 }
-
-export async function getRound(id: string) {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from('job_templates')
-    .select('*')
-    .eq('id', id)
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-  return data;
-}

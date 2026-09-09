@@ -9,9 +9,11 @@ import {
   startOfMonth,
   startOfWeek,
 } from 'date-fns';
+import { NewJobPanel } from '@/components/admin/NewJobPanel';
 import { ScheduleBoard } from '@/components/admin/ScheduleBoard';
 import { ButtonLink } from '@/components/ui/Button';
 import { requireStaff } from '@/lib/auth';
+import { getCustomers } from '@/lib/db/customers';
 import { getJobsForRange } from '@/lib/db/jobs';
 import { signPhotoUrls } from '@/lib/db/photos';
 import { getCleaners } from '@/lib/db/staff';
@@ -51,7 +53,11 @@ export default async function SchedulePage({
   const days: string[] = [];
   for (let cursor = start; cursor <= end; cursor = addDays(cursor, 1)) days.push(iso(cursor));
 
-  const [jobs, staff] = await Promise.all([getJobsForRange(iso(start), iso(end)), getCleaners()]);
+  const [jobs, staff, customers] = await Promise.all([
+    getJobsForRange(iso(start), iso(end)),
+    getCleaners(),
+    getCustomers(),
+  ]);
   const signed = await signPhotoUrls(photoPaths(jobs));
   const views = jobs.map((job) => toJobView(job, signed));
 
@@ -72,6 +78,16 @@ export default async function SchedulePage({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <NewJobPanel
+            customers={customers
+              .filter((customer) => customer.is_active)
+              .map((customer) => ({
+                id: customer.id,
+                label: `${customer.name} — ${customer.address_line1}`,
+              }))}
+            cleaners={staff.map((person) => ({ id: person.id, label: person.full_name }))}
+            defaultDate={iso(anchor)}
+          />
           <div className="flex rounded-btn border border-grey-200 bg-white p-1">
             {(['week', 'month'] as const).map((option) => (
               <Link

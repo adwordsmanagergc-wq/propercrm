@@ -9,7 +9,7 @@ import { requireStaff } from '@/lib/auth';
 import { getInvoice } from '@/lib/db/invoices';
 import { getCompany } from '@/lib/db/staff';
 import { formatDate, todayInTimezone } from '@/lib/format';
-import { chaseMessage, lineTotal } from '@/lib/invoice';
+import { chaseMessage, invoiceTotals, isOverdue, lineTotal } from '@/lib/invoice';
 import { formatMoney } from '@/lib/money';
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
@@ -28,19 +28,24 @@ export default async function InvoicePage({ params }: { params: { id: string } }
     differenceInCalendarDays(parseISO(today), parseISO(invoice.due_date)),
   );
 
+  const lines = [...(invoice.lines ?? [])].sort((a, b) => a.position - b.position);
+  // Recomputed from the lines rather than trusted from the row, so a line
+  // edited outside the app can never leave a wrong total on screen.
+  const totals = invoiceTotals(
+    lines.map((line) => ({ quantity: Number(line.quantity), unit_price: Number(line.unit_price) })),
+  );
+
   const chase = chaseMessage({
     customerName: invoice.customer?.name ?? 'there',
     companyName: company?.name ?? viewer.company.name,
     invoiceNumber: invoice.number,
-    amount: formatMoney(Number(invoice.total)),
+    amount: formatMoney(totals.total),
     dueDate: formatDate(invoice.due_date),
     daysOverdue,
     bankAccountName: company?.bank_account_name,
     bankSortCode: company?.bank_sort_code,
     bankAccountNumber: company?.bank_account_number,
   });
-
-  const lines = [...(invoice.lines ?? [])].sort((a, b) => a.position - b.position);
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
@@ -61,13 +66,13 @@ export default async function InvoicePage({ params }: { params: { id: string } }
         </div>
         <div className="flex items-center gap-3">
           <InvoiceStatusPill status={invoice.status} />
-          <span className="text-2xl font-semibold tabular-nums">
-            {formatMoney(Number(invoice.total))}
-          </span>
+          <span className="text-2xl font-semibold tabular-nums">{formatMoney(totals.total)}</span>
         </div>
       </div>
 
-      {invoice.status === 'overdue' ? (
+      {invoice.status !== 'paid' &&
+      invoice.status !== 'void' &&
+      isOverdue(invoice.due_date, parseISO(today)) ? (
         <p className="border-danger/30 rounded-btn border bg-white px-3.5 py-3 text-sm font-semibold text-danger">
           {daysOverdue} {daysOverdue === 1 ? 'day' : 'days'} overdue. Due{' '}
           {formatDate(invoice.due_date)}.
@@ -111,7 +116,7 @@ export default async function InvoicePage({ params }: { params: { id: string } }
                   Total
                 </td>
                 <td className="px-5 py-3 text-right text-lg font-semibold tabular-nums">
-                  {formatMoney(Number(invoice.total))}
+                  {formatMoney(totals.total)}
                 </td>
               </tr>
             </tfoot>

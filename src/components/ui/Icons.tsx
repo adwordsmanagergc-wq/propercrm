@@ -124,12 +124,6 @@ export const SearchIcon = (p: IconProps) => (
   </Svg>
 );
 
-export const PlusIcon = (p: IconProps) => (
-  <Svg {...p}>
-    <path d="M12 5v14M5 12h14" />
-  </Svg>
-);
-
 export const CloudOffIcon = (p: IconProps) => (
   <Svg {...p}>
     <path d="M6.5 18A4.5 4.5 0 0 1 6 9.06 6.5 6.5 0 0 1 17.5 7.4 4.6 4.6 0 0 1 20 16" />

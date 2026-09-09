@@ -33,26 +33,25 @@ const checkbox = (fallback: boolean) =>
       return value === 'true' || value === 'on' || value === '1' || value === 'yes';
     });
 
-export const roleSchema = z.enum(['owner', 'manager', 'cleaner']);
-export const frequencySchema = z.enum(['weekly', 'fortnightly', '4weekly', '8weekly', 'one_off']);
-export const skipReasonSchema = z.enum([
+const roleSchema = z.enum(['owner', 'manager', 'cleaner']);
+const frequencySchema = z.enum(['weekly', 'fortnightly', '4weekly', '8weekly', 'one_off']);
+const skipReasonSchema = z.enum([
   'no_access',
   'dog_on_site',
   'customer_cancelled',
   'weather',
   'other',
 ]);
-export const paymentMethodSchema = z.enum(['cash', 'bank', 'card', 'other']);
-export const photoKindSchema = z.enum(['before', 'after', 'issue']);
+const paymentMethodSchema = z.enum(['cash', 'bank', 'card', 'other']);
 
-export const emailSchema = z
+const emailSchema = z
   .string()
   .trim()
   .min(1, 'Email is required')
   .email('That does not look like an email address')
   .toLowerCase();
 
-export const passwordSchema = z
+const passwordSchema = z
   .string()
   .min(8, 'Use at least 8 characters')
   .max(72, 'That password is too long');
@@ -201,15 +200,6 @@ export const skipJobSchema = z.object({
   notes: optionalText(2000),
 });
 
-export const jobPhotoSchema = z.object({
-  jobId: uuid,
-  kind: photoKindSchema,
-  path: z.string().min(3).max(500),
-  lat: z.coerce.number().nullable().optional(),
-  lng: z.coerce.number().nullable().optional(),
-  takenAt: z.string().datetime().optional(),
-});
-
 export const optimiseRouteSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   cleanerId: z
@@ -226,11 +216,6 @@ export const createInvoiceSchema = z.object({
   customerId: uuid,
   jobIds: z.array(uuid).min(1, 'Pick at least one completed job'),
   notes: optionalText(1000),
-});
-
-export const invoiceStatusSchema = z.object({
-  invoiceId: uuid,
-  status: z.enum(['draft', 'sent', 'paid', 'overdue', 'void']),
 });
 
 export const markPaidSchema = z.object({
@@ -280,8 +265,3 @@ export const profileSchema = z.object({
   full_name: trimmed(120).min(2, 'What is your name?'),
   phone: optionalText(40),
 });
-
-export type SignUpInput = z.infer<typeof signUpSchema>;
-export type CustomerInput = z.infer<typeof customerSchema>;
-export type RoundInput = z.infer<typeof roundSchema>;
-export type SettingsInput = z.infer<typeof settingsSchema>;

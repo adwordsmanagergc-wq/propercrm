@@ -1,6 +1,6 @@
 import { format, isToday, isTomorrow, isYesterday, parseISO } from 'date-fns';
 
-export function asDate(value: string | Date): Date {
+function asDate(value: string | Date): Date {
   return typeof value === 'string' ? parseISO(value) : value;
 }
 
@@ -34,7 +34,7 @@ export function formatDuration(minutes: number | null | undefined): string {
   return `${hours} hr ${mins} min`;
 }
 
-export function formatPostcode(postcode: string | null | undefined): string {
+function formatPostcode(postcode: string | null | undefined): string {
   return (postcode ?? '').toUpperCase().trim();
 }
 

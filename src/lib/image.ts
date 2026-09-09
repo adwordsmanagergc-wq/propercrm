@@ -8,7 +8,7 @@
  * on the way: the location we keep is the one the browser gave us, recorded
  * against the job row.
  */
-export const MAX_DIMENSION = 1600;
+const MAX_DIMENSION = 1600;
 const JPEG_QUALITY = 0.82;
 
 export interface PreparedPhoto {

@@ -167,26 +167,27 @@ export async function createJobAction(
   });
 }
 
-export async function updateJobAction(
-  _prev: ActionResult | undefined,
-  formData: FormData,
-): Promise<ActionResult> {
+/** Edit one job's date, price, length or owner without touching its round. */
+export async function updateJobAction(input: unknown): Promise<ActionResult> {
   return run(async () => {
     await assertStaff();
-    const schema = jobSchema.extend({ id: uuid });
-    const input = parseForm(schema, formData);
+    const schema = z.object({
+      jobId: uuid,
+      scheduled_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Pick a date'),
+      price: z.coerce.number().min(0, 'Price cannot be negative').max(100000),
+      duration_mins: z.coerce.number().int().min(5).max(600),
+    });
+    const input_ = schema.parse(input);
     const supabase = createClient();
 
     const { error } = await supabase
       .from('jobs')
       .update({
-        scheduled_date: input.scheduled_date,
-        assigned_to: input.assigned_to ?? null,
-        price: input.price,
-        duration_mins: input.duration_mins,
-        notes: input.notes ?? null,
+        scheduled_date: input_.scheduled_date,
+        price: input_.price,
+        duration_mins: input_.duration_mins,
       })
-      .eq('id', input.id);
+      .eq('id', input_.jobId);
 
     if (error) return fail(error.message);
     revalidateJobViews();
