@@ -1,7 +1,7 @@
 import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import type { MyCompanyRow, ProfileRow, UserRole } from '@/lib/types/database';
+import type { MyCompanyRow, ProfileRow } from '@/lib/types/database';
 
 export interface Viewer {
   userId: string;
@@ -69,12 +69,6 @@ export async function requireOwner(): Promise<Viewer> {
   if (!viewer.isOwner) redirect('/app');
   return viewer;
 }
-
-export const ROLE_LABELS: Record<UserRole, string> = {
-  owner: 'Owner',
-  manager: 'Manager',
-  cleaner: 'Cleaner',
-};
 
 /**
  * Server Action guard. Actions never trust the form — they re-check the

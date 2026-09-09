@@ -391,6 +391,8 @@ export type Database = {
         Returns: { customer_id: string; balance: number; lifetime_value: number }[];
       };
       topup_company_schedule: { Args: { p_company: string; p_weeks?: number }; Returns: number };
+      topup_all_schedules: { Args: { p_weeks?: number }; Returns: number };
+      mark_overdue_invoices: { Args: Record<string, never>; Returns: number };
       generate_jobs_for_template: {
         Args: { p_template: string; p_until: string };
         Returns: number;

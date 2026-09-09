@@ -3,7 +3,8 @@ import { redirect } from 'next/navigation';
 import { ProfileForm } from '@/components/cleaner/ProfileForm';
 import { SignOutButton } from '@/components/shell/SignOutButton';
 import { Card, CardBody, CardHeader, StatTile } from '@/components/ui/Card';
-import { ROLE_LABELS, requireViewer } from '@/lib/auth';
+import { requireViewer } from '@/lib/auth';
+import { ROLE_LABELS } from '@/lib/roles';
 import { getMyStats } from '@/lib/db/myjobs';
 import { formatDuration } from '@/lib/format';
 

@@ -4,7 +4,8 @@ import { redirect } from 'next/navigation';
 import { AuthCard } from '@/components/auth/AuthCard';
 import { AcceptInviteForm } from '@/components/auth/SimpleForms';
 import { Notice } from '@/components/ui/Field';
-import { ROLE_LABELS, getViewer } from '@/lib/auth';
+import { getViewer } from '@/lib/auth';
+import { ROLE_LABELS } from '@/lib/roles';
 import { createClient } from '@/lib/supabase/server';
 
 export const metadata: Metadata = { title: 'Join the team' };

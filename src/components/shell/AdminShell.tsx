@@ -12,7 +12,8 @@ import {
   SettingsIcon,
   TodayIcon,
 } from '@/components/ui/Icons';
-import { ROLE_LABELS, type Viewer } from '@/lib/auth';
+import { type Viewer } from '@/lib/auth';
+import { ROLE_LABELS } from '@/lib/roles';
 import { initials } from '@/lib/format';
 
 const NAV = [

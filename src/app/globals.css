@@ -149,3 +149,17 @@
   font-family: var(--font-sans);
   border-radius: 12px;
 }
+
+@media print {
+  :root {
+    --grey-50: #ffffff;
+  }
+
+  body {
+    background: #ffffff;
+  }
+
+  @page {
+    margin: 16mm;
+  }
+}
