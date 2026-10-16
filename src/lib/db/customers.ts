@@ -2,7 +2,7 @@ import 'server-only';
 import { createClient } from '@/lib/supabase/server';
 
 // prettier-ignore
-const CUSTOMER_SELECT = 'id, name, phone, email, address_line1, address_line2, city, postcode, lat, lng, access_notes, gate_code, dog_on_site, preferred_contact, is_active, notes, created_at';
+const CUSTOMER_SELECT = 'id, name, phone, email, address_line1, address_line2, city, postcode, lat, lng, access_notes, gate_code, dog_on_site, preferred_contact, is_active, notes, portal_token, created_at';
 
 export async function getCustomers() {
   const supabase = createClient();

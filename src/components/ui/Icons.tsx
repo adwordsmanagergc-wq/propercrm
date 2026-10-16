@@ -137,3 +137,29 @@ export const SprayIcon = (p: IconProps) => (
     <path d="M10 8V4h4v4M17 5h2M17 8h3M18 2h2" />
   </Svg>
 );
+
+export const QuoteIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
+    <path d="M14 3v5h5M9 13h6M9 17h4" />
+  </Svg>
+);
+
+export const ChartIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 20h16M7 16v-5M12 16V6M17 16v-8" />
+  </Svg>
+);
+
+export const InboxIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 13 6.5 5h11L20 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-5Z" />
+    <path d="M4 13h4.5l1 2h5l1-2H20" />
+  </Svg>
+);
+
+export const SendIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M21 3 10 14M21 3l-7 18-4-7-7-4 18-7Z" />
+  </Svg>
+);

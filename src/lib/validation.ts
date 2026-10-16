@@ -265,3 +265,92 @@ export const profileSchema = z.object({
   full_name: trimmed(120).min(2, 'What is your name?'),
   phone: optionalText(40),
 });
+
+// ---------------------------------------------------------------------------
+// Quotes
+// ---------------------------------------------------------------------------
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Pick a date');
+const optionalDate = z
+  .union([isoDate, z.literal('')])
+  .transform((v) => (v === '' ? null : v))
+  .nullable()
+  .optional();
+
+export const quoteLineSchema = z.object({
+  description: trimmed(200).min(1, 'Describe the work on every line'),
+  quantity: z.coerce.number().positive('Quantity must be more than 0').max(1000),
+  unit_price: z.coerce.number().min(0, 'Price cannot be negative').max(100000),
+});
+
+export const quoteSchema = z
+  .object({
+    id: uuid.optional().nullable(),
+    customer_id: z
+      .union([uuid, z.literal('')])
+      .transform((v) => (v === '' ? null : v))
+      .nullable()
+      .optional(),
+    contact_name: trimmed(160).min(2, 'Who is the quote for?'),
+    contact_email: z
+      .union([z.literal(''), z.string().trim().email('That does not look like an email address')])
+      .transform((v) => (v === '' ? null : v.toLowerCase()))
+      .nullable()
+      .optional(),
+    contact_phone: optionalText(40),
+    address_line1: trimmed(160),
+    address_line2: optionalText(160),
+    city: optionalText(80),
+    postcode: trimmed(12),
+    frequency: frequencySchema,
+    duration_mins: z.coerce.number().int().min(5).max(600).default(30),
+    proposed_start: optionalDate,
+    valid_until: optionalDate,
+    message: optionalText(1500),
+    lines: z.array(quoteLineSchema).min(1, 'Add at least one line').max(30),
+  })
+  .refine((quote) => quote.customer_id || quote.address_line1.length > 0, {
+    message: 'Add the address you are quoting for',
+    path: ['address_line1'],
+  });
+
+export type QuoteInput = z.infer<typeof quoteSchema>;
+
+// ---------------------------------------------------------------------------
+// Customer messages
+// ---------------------------------------------------------------------------
+export const channelSchema = z.enum(['email', 'sms']);
+
+const templateText = z
+  .string()
+  .trim()
+  .max(1000, 'Keep it under 1,000 characters')
+  .transform((v) => (v === '' ? null : v))
+  .nullable()
+  .optional();
+
+export const messagingSettingsSchema = z.object({
+  notify_visit_reminder: checkbox(false),
+  notify_job_done: checkbox(false),
+  notify_overdue: checkbox(false),
+  chase_every_days: z.coerce.number().int().min(3).max(60).default(7),
+  sms_sender: z
+    .string()
+    .trim()
+    .transform((v) => v.replace(/\s+/g, ''))
+    .refine((v) => v === '' || /^[A-Za-z0-9]{1,11}$/.test(v), {
+      message: 'Up to 11 letters and numbers, no spaces',
+    })
+    .transform((v) => (v === '' ? null : v))
+    .nullable()
+    .optional(),
+  tpl_visit_reminder: templateText,
+  tpl_job_done: templateText,
+  tpl_overdue: templateText,
+  tpl_invoice: templateText,
+  tpl_quote: templateText,
+  quote_prefix: trimmed(10).min(1, 'A prefix is required'),
+  quote_valid_days: z.coerce.number().int().min(1).max(365).default(30),
+  quote_terms: optionalText(1500),
+});
+
+export const requestKindSchema = z.enum(['skip_next', 'extra_clean', 'callback', 'message']);

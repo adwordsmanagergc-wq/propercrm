@@ -21,6 +21,23 @@ and an after photo. It works with no signal: today's round is cached on the
 phone, and completions, notes and photos queue locally and sync when the
 signal returns.
 
+**For the customer** — no app, no password. Every customer has a private
+account page (`/portal/<token>`) with their next clean, before and after
+photos, invoices to pay, and buttons to skip a clean, book an extra one or ask
+for a call back. Requests land on the office's Today screen.
+
+**Winning work** — quotes with line items, sent by email or text. The prospect
+accepts on their phone and the customer, the round and the first eight weeks
+of visits are created in one go. Quotes track sent, opened and answered.
+
+**Getting paid and staying in touch** — every invoice has a pay link. With
+Stripe connected the customer pays by card or Apple/Google Pay and the invoice
+marks itself paid; otherwise the link shows bank details. Optional automatic
+messages go out each evening: tomorrow's visit reminders, "job done" with the
+photos, and overdue chasers on a schedule you set. Every message is logged on
+the customer. Reports show work done, money in, debt, the round book's yearly
+value, quote win rate and each cleaner's speed and photo-proof rate.
+
 ## Stack
 
 |            |                                                                  |
@@ -79,7 +96,10 @@ Copy `.env.example` to `.env.local`. The real file is gitignored.
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | browser + server                              | yes               |
 | `SUPABASE_SERVICE_ROLE_KEY`     | **server only** — invite emails, nightly cron | yes               |
 | `NEXT_PUBLIC_SITE_URL`          | auth redirects and invite links               | yes               |
-| `CRON_SECRET`                   | shared secret for `/api/cron/topup`           | yes in production |
+| `CRON_SECRET`                   | shared secret for the `/api/cron/*` routes    | yes in production |
+| `RESEND_API_KEY`, `EMAIL_FROM`  | customer emails                               | no                |
+| `TWILIO_*`                      | customer texts                                | no                |
+| `STRIPE_*`                      | card payments via Stripe Connect              | no                |
 | `TEST_SUPABASE_*`               | integration tests only                        | no                |
 
 The service role key bypasses RLS. It must never reach the browser — it is
@@ -118,7 +138,10 @@ src/
     (auth)/            sign in, sign up, reset, accept invite, welcome
     app/               the product — one route tree, two shells
     print/             printable invoices, outside the app chrome
-    api/cron/topup/    nightly schedule top-up and overdue sweep
+    api/cron/topup/    nightly schedule top-up, overdue sweep, quote expiry
+    api/cron/messages/ evening reminders, job-done notes, overdue chasers
+    api/stripe/        Stripe Connect webhook (marks invoices paid)
+    q/ portal/ pay/    customer-facing pages, reached by token, no sign-in
     actions/           Server Actions, one file per area
   components/
     admin/  cleaner/  shell/  ui/
@@ -216,8 +239,10 @@ placeholder.
    `/setup-required`, which names what is missing.
 3. Add that URL's `/auth/callback` to the Supabase redirect allowlist.
 4. `vercel.json` registers a nightly cron on `/api/cron/topup`, which tops the
-   diary up eight weeks ahead and marks overdue invoices. Vercel sends
-   `CRON_SECRET` as a bearer token; the route rejects anything else.
+   diary up eight weeks ahead, marks overdue invoices and expires old quotes,
+   and an evening one on `/api/cron/messages` (16:00 UTC) that sends the
+   automatic customer messages. Vercel sends `CRON_SECRET` as a bearer token;
+   both routes reject anything else.
 5. Apply migrations to the production database with `supabase db push` (or run
    them from CI) before the first deploy.
 

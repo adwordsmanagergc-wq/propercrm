@@ -11,6 +11,9 @@ import { getCompany } from '@/lib/db/staff';
 import { formatDate, todayInTimezone } from '@/lib/format';
 import { chaseMessage, invoiceTotals, isOverdue, lineTotal } from '@/lib/invoice';
 import { formatMoney } from '@/lib/money';
+import { getSiteUrl } from '@/lib/env';
+import { payUrl } from '@/lib/messaging/plan';
+import { toMobileE164 } from '@/lib/messaging/templates';
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const invoice = await getInvoice(params.id);
@@ -139,6 +142,9 @@ export default async function InvoicePage({ params }: { params: { id: string } }
             status={invoice.status}
             today={today}
             chaseText={chase}
+            payLink={payUrl(getSiteUrl(), invoice.pay_token)}
+            hasEmail={Boolean(invoice.customer?.email)}
+            hasMobile={Boolean(toMobileE164(invoice.customer?.phone))}
           />
         </CardBody>
       </Card>

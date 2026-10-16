@@ -1,5 +1,5 @@
 import { cn } from '@/lib/cn';
-import type { InvoiceStatus, JobStatus, SkipReason } from '@/lib/types/database';
+import type { InvoiceStatus, JobStatus, QuoteStatus, SkipReason } from '@/lib/types/database';
 
 export type PillTone = 'neutral' | 'blue' | 'success' | 'warning' | 'danger';
 
@@ -80,3 +80,23 @@ export const SKIP_REASON_LABELS: Record<SkipReason, string> = {
   weather: 'Weather',
   other: 'Something else',
 };
+
+const QUOTE_STATUS_TONES: Record<QuoteStatus, PillTone> = {
+  draft: 'neutral',
+  sent: 'blue',
+  accepted: 'success',
+  declined: 'danger',
+  expired: 'warning',
+};
+
+const QUOTE_STATUS_TEXT: Record<QuoteStatus, string> = {
+  draft: 'Draft',
+  sent: 'Sent',
+  accepted: 'Accepted',
+  declined: 'Declined',
+  expired: 'Expired',
+};
+
+export function QuoteStatusPill({ status }: { status: QuoteStatus }) {
+  return <Pill tone={QUOTE_STATUS_TONES[status]}>{QUOTE_STATUS_TEXT[status]}</Pill>;
+}

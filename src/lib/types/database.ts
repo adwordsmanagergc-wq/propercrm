@@ -11,6 +11,12 @@ export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'void';
 export type PaymentMethod = 'cash' | 'bank' | 'card' | 'other';
 export type ContactPref = 'phone' | 'sms' | 'email' | 'none';
 export type SkipReason = 'no_access' | 'dog_on_site' | 'customer_cancelled' | 'weather' | 'other';
+export type QuoteStatus = 'draft' | 'sent' | 'accepted' | 'declined' | 'expired';
+export type RequestKind = 'skip_next' | 'extra_clean' | 'callback' | 'message';
+export type MessageKind =
+  'visit_reminder' | 'job_done' | 'overdue' | 'invoice' | 'quote' | 'portal';
+export type MessageChannel = 'email' | 'sms';
+export type MessageStatus = 'sent' | 'failed' | 'skipped';
 
 export type CompanyRow = {
   id: string;
@@ -34,6 +40,22 @@ export type CompanyRow = {
   bank_sort_code: string | null;
   bank_account_number: string | null;
   invoice_footer: string | null;
+  quote_prefix: string;
+  next_quote_number: number;
+  quote_valid_days: number;
+  quote_terms: string | null;
+  notify_visit_reminder: boolean;
+  notify_job_done: boolean;
+  notify_overdue: boolean;
+  chase_every_days: number;
+  sms_sender: string | null;
+  tpl_visit_reminder: string | null;
+  tpl_job_done: string | null;
+  tpl_overdue: string | null;
+  tpl_invoice: string | null;
+  tpl_quote: string | null;
+  stripe_account_id: string | null;
+  stripe_charges_enabled: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -80,6 +102,7 @@ export type CustomerRow = {
   preferred_contact: ContactPref;
   is_active: boolean;
   notes: string | null;
+  portal_token: string;
   created_at: string;
   updated_at: string;
 };
@@ -172,6 +195,8 @@ export type InvoiceRow = {
   payment_method: PaymentMethod | null;
   notes: string | null;
   sent_at: string | null;
+  pay_token: string;
+  stripe_session_id: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -185,6 +210,79 @@ export type InvoiceLineRow = {
   quantity: number;
   unit_price: number;
   position: number;
+  created_at: string;
+};
+
+export type QuoteRow = {
+  id: string;
+  company_id: string;
+  customer_id: string | null;
+  number: string;
+  status: QuoteStatus;
+  contact_name: string;
+  contact_email: string | null;
+  contact_phone: string | null;
+  address_line1: string;
+  address_line2: string | null;
+  city: string | null;
+  postcode: string;
+  lat: number | null;
+  lng: number | null;
+  frequency: Frequency;
+  duration_mins: number;
+  proposed_start: string | null;
+  valid_until: string;
+  total: number;
+  message: string | null;
+  token: string;
+  sent_at: string | null;
+  viewed_at: string | null;
+  responded_at: string | null;
+  decline_reason: string | null;
+  template_id: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type QuoteLineRow = {
+  id: string;
+  company_id: string;
+  quote_id: string;
+  description: string;
+  quantity: number;
+  unit_price: number;
+  position: number;
+  created_at: string;
+};
+
+export type CustomerRequestRow = {
+  id: string;
+  company_id: string;
+  customer_id: string;
+  kind: RequestKind;
+  job_id: string | null;
+  message: string | null;
+  resolved_at: string | null;
+  resolved_by: string | null;
+  created_at: string;
+};
+
+export type MessageLogRow = {
+  id: string;
+  company_id: string;
+  customer_id: string | null;
+  kind: MessageKind;
+  channel: MessageChannel;
+  recipient: string;
+  subject: string | null;
+  body: string;
+  status: MessageStatus;
+  error: string | null;
+  provider_id: string | null;
+  related_id: string | null;
+  dedupe_key: string | null;
+  created_by: string | null;
   created_at: string;
 };
 
@@ -315,6 +413,30 @@ export type Database = {
           Rel<'invoice_lines_job_id_fkey', 'job_id', 'jobs'>,
         ]
       >;
+      quotes: Table<
+        QuoteRow,
+        [
+          CompanyRel<'quotes'>,
+          Rel<'quotes_customer_id_fkey', 'customer_id', 'customers'>,
+          Rel<'quotes_template_id_fkey', 'template_id', 'job_templates'>,
+        ]
+      >;
+      quote_lines: Table<
+        QuoteLineRow,
+        [CompanyRel<'quote_lines'>, Rel<'quote_lines_quote_id_fkey', 'quote_id', 'quotes'>]
+      >;
+      customer_requests: Table<
+        CustomerRequestRow,
+        [
+          CompanyRel<'customer_requests'>,
+          Rel<'customer_requests_customer_id_fkey', 'customer_id', 'customers'>,
+          Rel<'customer_requests_job_id_fkey', 'job_id', 'jobs'>,
+        ]
+      >;
+      message_log: Table<
+        MessageLogRow,
+        [CompanyRel<'message_log'>, Rel<'message_log_customer_id_fkey', 'customer_id', 'customers'>]
+      >;
       activity_log: Table<
         ActivityLogRow,
         [CompanyRel<'activity_log'>, Rel<'activity_log_actor_id_fkey', 'actor_id', 'profiles'>]
@@ -397,6 +519,39 @@ export type Database = {
         Args: { p_template: string; p_until: string };
         Returns: number;
       };
+      save_quote: {
+        Args: {
+          p_id: string | null;
+          p_customer: string | null;
+          p_contact_name: string;
+          p_contact_email: string | null;
+          p_contact_phone: string | null;
+          p_address_line1: string;
+          p_address_line2: string | null;
+          p_city: string | null;
+          p_postcode: string;
+          p_frequency: Frequency;
+          p_duration_mins: number;
+          p_proposed_start: string | null;
+          p_valid_until: string | null;
+          p_message: string | null;
+          p_lines: { description: string; quantity: number; unit_price: number }[];
+        };
+        Returns: string;
+      };
+      quote_public: { Args: { p_token: string }; Returns: unknown };
+      respond_to_quote: {
+        Args: { p_token: string; p_accept: boolean; p_reason?: string | null };
+        Returns: QuoteStatus;
+      };
+      expire_quotes: { Args: Record<string, never>; Returns: number };
+      portal_snapshot: { Args: { p_token: string }; Returns: unknown };
+      portal_request: {
+        Args: { p_token: string; p_kind: RequestKind; p_message?: string | null };
+        Returns: string;
+      };
+      today_for_company: { Args: { p_company: string }; Returns: string };
+      report_summary: { Args: { p_from: string; p_to: string }; Returns: unknown };
     };
     Enums: {
       user_role: UserRole;
@@ -407,6 +562,8 @@ export type Database = {
       payment_method: PaymentMethod;
       contact_pref: ContactPref;
       skip_reason: SkipReason;
+      quote_status: QuoteStatus;
+      request_kind: RequestKind;
     };
     CompositeTypes: Record<string, never>;
   };

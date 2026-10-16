@@ -5,7 +5,9 @@ import { SidebarLink, TabLink } from '@/components/shell/NavLink';
 import { SignOutButton } from '@/components/shell/SignOutButton';
 import {
   CalendarIcon,
+  ChartIcon,
   InvoiceIcon,
+  QuoteIcon,
   MapIcon,
   PeopleIcon,
   RepeatIcon,
@@ -22,7 +24,9 @@ const NAV = [
   { href: '/app/map', label: 'Round map', icon: <MapIcon className="h-5 w-5" /> },
   { href: '/app/customers', label: 'Customers', icon: <PeopleIcon className="h-5 w-5" /> },
   { href: '/app/rounds', label: 'Rounds', icon: <RepeatIcon className="h-5 w-5" /> },
+  { href: '/app/quotes', label: 'Quotes', icon: <QuoteIcon className="h-5 w-5" /> },
   { href: '/app/invoices', label: 'Invoices', icon: <InvoiceIcon className="h-5 w-5" /> },
+  { href: '/app/reports', label: 'Reports', icon: <ChartIcon className="h-5 w-5" /> },
   { href: '/app/staff', label: 'Staff', icon: <PeopleIcon className="h-5 w-5" /> },
   { href: '/app/settings', label: 'Settings', icon: <SettingsIcon className="h-5 w-5" /> },
 ];

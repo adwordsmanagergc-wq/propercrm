@@ -25,7 +25,7 @@ export async function getInvoice(id: string) {
     .from('invoices')
     .select(
       // prettier-ignore
-      'id, number, issue_date, due_date, status, subtotal, total, paid_at, payment_method, notes, sent_at, customer_id, customer:customers(id, name, email, phone, address_line1, address_line2, city, postcode), lines:invoice_lines(id, description, quantity, unit_price, position, job_id)',
+      'id, number, issue_date, due_date, status, subtotal, total, paid_at, payment_method, notes, sent_at, pay_token, customer_id, customer:customers(id, name, email, phone, address_line1, address_line2, city, postcode), lines:invoice_lines(id, description, quantity, unit_price, position, job_id)',
     )
     .eq('id', id)
     .maybeSingle();

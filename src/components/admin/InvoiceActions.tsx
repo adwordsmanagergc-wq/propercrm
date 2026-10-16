@@ -7,6 +7,7 @@ import {
   markInvoiceSentAction,
   voidInvoiceAction,
 } from '@/app/actions/invoices';
+import { sendInvoiceAction } from '@/app/actions/messages';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { Field, Notice, Select, Input } from '@/components/ui/Field';
@@ -18,31 +19,66 @@ export function InvoiceActions({
   status,
   today,
   chaseText,
+  payLink,
+  hasEmail,
+  hasMobile,
 }: {
   invoiceId: string;
   status: InvoiceStatus;
   today: string;
   chaseText: string;
+  payLink: string;
+  hasEmail: boolean;
+  hasMobile: boolean;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [sentNote, setSentNote] = useState<string | null>(null);
   const [payOpen, setPayOpen] = useState(false);
   const [method, setMethod] = useState<PaymentMethod>('bank');
   const [paidOn, setPaidOn] = useState(today);
   const [pending, startTransition] = useTransition();
 
-  function act(work: () => Promise<{ ok: boolean; error?: string }>) {
+  function act(work: () => Promise<{ ok: boolean; error?: string; message?: string }>) {
     setError(null);
+    setSentNote(null);
     startTransition(async () => {
       const result = await work();
       if (!result.ok) setError(result.error ?? 'That did not work');
-      else router.refresh();
+      else {
+        if (result.message) setSentNote(result.message);
+        router.refresh();
+      }
     });
   }
+
+  const sendable = status !== 'paid' && status !== 'void';
 
   return (
     <div className="space-y-3">
       {error ? <Notice tone="error">{error}</Notice> : null}
+      {sentNote ? <Notice tone="success">{sentNote}</Notice> : null}
+
+      {sendable ? (
+        <div className="flex flex-wrap gap-2">
+          <Button
+            disabled={pending || !hasEmail}
+            title={hasEmail ? undefined : 'No email address on file'}
+            onClick={() => act(() => sendInvoiceAction({ invoiceId, channel: 'email' }))}
+          >
+            {status === 'overdue' ? 'Email a reminder' : 'Email with pay link'}
+          </Button>
+          <Button
+            variant="secondary"
+            disabled={pending || !hasMobile}
+            title={hasMobile ? undefined : 'No mobile number on file'}
+            onClick={() => act(() => sendInvoiceAction({ invoiceId, channel: 'sms' }))}
+          >
+            {status === 'overdue' ? 'Text a reminder' : 'Text with pay link'}
+          </Button>
+          <CopyButton text={payLink} label="Copy pay link" copiedLabel="Pay link copied" />
+        </div>
+      ) : null}
 
       <div className="flex flex-wrap gap-2">
         {status === 'draft' ? (

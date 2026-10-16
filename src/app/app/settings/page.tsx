@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { LogoUpload } from '@/components/admin/LogoUpload';
+import { MessagingForm } from '@/components/admin/MessagingForm';
+import { StripeConnect } from '@/components/admin/StripeConnect';
 import { SettingsForm } from '@/components/admin/SettingsForm';
 import { ProfileForm } from '@/components/cleaner/ProfileForm';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
@@ -9,17 +11,28 @@ import { Pill } from '@/components/ui/Pill';
 import { requireStaff } from '@/lib/auth';
 import { getCompany } from '@/lib/db/staff';
 import { formatDate } from '@/lib/format';
+import { emailConfigured, smsConfigured } from '@/lib/messaging/deliver';
+import { syncStripeAccount } from '@/lib/payments';
+import { stripeConfigured } from '@/lib/stripe';
 
 export const metadata: Metadata = { title: 'Settings' };
 
 export default async function SettingsPage({
   searchParams,
 }: {
-  searchParams: { welcome?: string };
+  searchParams: { welcome?: string; stripe?: string };
 }) {
   const viewer = await requireStaff();
   const company = await getCompany();
   if (!company) notFound();
+
+  // Back from Stripe's onboarding form: check what Stripe now says.
+  let chargesEnabled = company.stripe_charges_enabled;
+  if (searchParams.stripe && company.stripe_account_id) {
+    chargesEnabled = await syncStripeAccount(company.id, company.stripe_account_id).catch(
+      () => chargesEnabled,
+    );
+  }
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
@@ -61,6 +74,29 @@ export default async function SettingsPage({
         <CardHeader title="Company" />
         <CardBody>
           <SettingsForm company={company} />
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardHeader title="Card payments" />
+        <CardBody>
+          <StripeConnect
+            available={stripeConfigured()}
+            connected={Boolean(company.stripe_account_id)}
+            chargesEnabled={chargesEnabled}
+            isOwner={viewer.isOwner}
+          />
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardHeader title="Customer messages and quotes" />
+        <CardBody>
+          <MessagingForm
+            company={company}
+            emailReady={emailConfigured()}
+            smsReady={smsConfigured()}
+          />
         </CardBody>
       </Card>
 

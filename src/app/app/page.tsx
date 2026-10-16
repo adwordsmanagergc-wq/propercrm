@@ -4,6 +4,7 @@ import { TodayView } from '@/components/admin/TodayView';
 import { StatSkeleton, ListSkeleton } from '@/components/ui/States';
 import { Card } from '@/components/ui/Card';
 import { requireViewer } from '@/lib/auth';
+import { OpenRequests } from '@/components/admin/OpenRequests';
 
 export default async function AppHomePage() {
   const viewer = await requireViewer();
@@ -27,7 +28,10 @@ export default async function AppHomePage() {
         </div>
       }
     >
-      <TodayView viewer={viewer} />
+      <div className="space-y-5">
+        <OpenRequests />
+        <TodayView viewer={viewer} />
+      </div>
     </Suspense>
   );
 }
