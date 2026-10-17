@@ -6,7 +6,8 @@ import { fail, ok, parseForm, run, type ActionResult } from '@/lib/actions';
 import { assertOwner, assertStaff } from '@/lib/auth';
 import { getSiteUrl } from '@/lib/env';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
-import { inviteSchema, staffUpdateSchema, uuid } from '@/lib/validation';
+import { lookupPostcode } from '@/lib/geocode';
+import { inviteSchema, staffStartSchema, staffUpdateSchema, uuid } from '@/lib/validation';
 
 export interface InviteResult {
   link: string;
@@ -105,5 +106,39 @@ export async function updateStaffAction(input: unknown): Promise<ActionResult> {
 
     revalidatePath('/app/staff');
     return ok(undefined, 'Saved');
+  });
+}
+
+/**
+ * Where someone sets off each morning. Their day is routed from here, so the
+ * postcode is turned into a map position as it is saved.
+ */
+export async function saveStaffStartAction(
+  _prev: ActionResult | undefined,
+  formData: FormData,
+): Promise<ActionResult> {
+  return run(async () => {
+    await assertStaff();
+    const input = parseForm(staffStartSchema, formData);
+    const postcode = input.start_postcode?.toUpperCase() ?? null;
+    const found = postcode ? await lookupPostcode(postcode) : null;
+
+    const supabase = createClient();
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        start_address: input.start_address ?? null,
+        start_postcode: postcode,
+        start_lat: found?.lat ?? null,
+        start_lng: found?.lng ?? null,
+      })
+      .eq('id', input.profileId);
+    if (error) return fail(error.message);
+
+    revalidatePath('/app/staff');
+    if (postcode && !found) {
+      return ok(undefined, 'Saved, but that postcode could not be found on the map');
+    }
+    return ok(undefined, postcode ? 'Start point saved' : 'Start point cleared');
   });
 }

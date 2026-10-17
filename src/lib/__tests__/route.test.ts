@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { haversineKm, nearestNeighbourOrder, routeLengthKm } from '@/lib/route';
+import {
+  bestRoute,
+  haversineKm,
+  nearestNeighbourOrder,
+  planDay,
+  routeLengthKm,
+  twoOpt,
+} from '@/lib/route';
 
 const yard = { lat: 51.4485, lng: -0.9735 }; // RG1 5AA
 
@@ -76,5 +83,69 @@ describe('nearestNeighbourOrder', () => {
     const before = routeLengthKm(jobs, yard);
     const after = routeLengthKm(nearestNeighbourOrder(jobs, yard), yard);
     expect(after).toBeLessThanOrEqual(before);
+  });
+});
+
+describe('twoOpt', () => {
+  it('untangles a crossed route', () => {
+    // Four corners of a square visited in a crossing order: a → c → b → d.
+    const a = point('a', 0, 0);
+    const b = point('b', 0, 0.01);
+    const c = point('c', 0.01, 0.01);
+    const d = point('d', 0.01, 0);
+    const crossed = [a, c, b, d] as Array<typeof a & { lat: number; lng: number }>;
+    const fixed = twoOpt(crossed, null);
+    expect(routeLengthKm(fixed, null)).toBeLessThan(routeLengthKm(crossed, null));
+  });
+
+  it('never makes a route longer', () => {
+    const stops = Array.from({ length: 25 }, (_, i) =>
+      point(`s${i}`, 51.4 + ((i * 37) % 17) / 200, -1 + ((i * 53) % 19) / 200),
+    ) as Array<{ id: string; lat: number; lng: number }>;
+    const rough = nearestNeighbourOrder(stops, yard);
+    expect(routeLengthKm(twoOpt(rough, yard), yard)).toBeLessThanOrEqual(
+      routeLengthKm(rough, yard) + 1e-9,
+    );
+  });
+});
+
+describe('bestRoute', () => {
+  it('keeps every job, with unlocated ones on the end', () => {
+    const jobs = [point('x', null, null), point('a', 51.45, -0.97), point('b', 51.46, -0.99)];
+    const ordered = bestRoute(jobs, yard);
+    expect(ordered.map((j) => j.id).sort()).toEqual(['a', 'b', 'x']);
+    expect(ordered.at(-1)?.id).toBe('x');
+  });
+
+  it('starts from the cleaner, not the yard', () => {
+    const west = { lat: 51.4446, lng: -1.0182 };
+    const jobs = [point('east', 51.452, -0.945), point('westish', 51.446, -1.01)];
+    expect(bestRoute(jobs, west)[0]?.id).toBe('westish');
+    expect(bestRoute(jobs, { lat: 51.452, lng: -0.946 })[0]?.id).toBe('east');
+  });
+});
+
+describe('planDay', () => {
+  const stop = (id: string, status: string, lat: number, lng: number) => ({ id, status, lat, lng });
+
+  it('leaves finished work in place and routes the rest from the last job', () => {
+    const day = [
+      stop('near-home', 'scheduled', 51.473, -0.98),
+      stop('done', 'completed', 51.445, -1.017),
+      stop('next-to-done', 'scheduled', 51.446, -1.015),
+      stop('skipped', 'skipped', 51.46, -0.99),
+    ];
+    const home = { lat: 51.473, lng: -0.979 };
+    expect(planDay(day, home).map((s) => s.id)).toEqual([
+      'done',
+      'next-to-done',
+      'near-home',
+      'skipped',
+    ]);
+  });
+
+  it('routes from the start point when nothing is done yet', () => {
+    const day = [stop('far', 'scheduled', 51.445, -1.017), stop('near', 'scheduled', 51.47, -0.98)];
+    expect(planDay(day, { lat: 51.473, lng: -0.979 })[0]?.id).toBe('near');
   });
 });

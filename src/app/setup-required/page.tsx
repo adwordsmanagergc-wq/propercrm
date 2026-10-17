@@ -46,7 +46,7 @@ export default function SetupRequiredPage() {
           </p>
 
           {problems.length > 0 ? (
-            <div className="border-danger/30 mt-5 rounded-btn border bg-white px-3.5 py-3">
+            <div className="mt-5 rounded-btn border border-danger/30 bg-white px-3.5 py-3">
               <p className="text-sm font-semibold text-danger">What is wrong</p>
               <ul className="mt-1.5 space-y-1 text-sm text-grey-900">
                 {problems.map((problem) => (

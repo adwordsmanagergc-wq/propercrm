@@ -76,7 +76,7 @@ export default async function InvoicePage({ params }: { params: { id: string } }
       {invoice.status !== 'paid' &&
       invoice.status !== 'void' &&
       isOverdue(invoice.due_date, parseISO(today)) ? (
-        <p className="border-danger/30 rounded-btn border bg-white px-3.5 py-3 text-sm font-semibold text-danger">
+        <p className="rounded-btn border border-danger/30 bg-white px-3.5 py-3 text-sm font-semibold text-danger">
           {daysOverdue} {daysOverdue === 1 ? 'day' : 'days'} overdue. Due{' '}
           {formatDate(invoice.due_date)}.
         </p>

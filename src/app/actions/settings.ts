@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { fail, ok, parseForm, run, type ActionResult } from '@/lib/actions';
 import { assertStaff } from '@/lib/auth';
+import { resolveCoords } from '@/lib/geocode';
 import { createClient } from '@/lib/supabase/server';
 import { settingsSchema } from '@/lib/validation';
 
@@ -15,6 +16,7 @@ export async function saveSettingsAction(
     const viewer = await assertStaff();
     const input = parseForm(settingsSchema, formData);
     const supabase = createClient();
+    const yard = await resolveCoords(input.start_postcode, input.start_lat, input.start_lng);
 
     const { error } = await supabase
       .from('companies')
@@ -24,8 +26,9 @@ export async function saveSettingsAction(
         email: input.email ?? null,
         timezone: input.timezone,
         start_postcode: input.start_postcode?.toUpperCase() ?? null,
-        start_lat: input.start_lat ?? null,
-        start_lng: input.start_lng ?? null,
+        start_lat: yard.lat,
+        start_lng: yard.lng,
+        auto_route: input.auto_route,
         working_days: input.working_days.sort((a, b) => a - b),
         invoice_prefix: input.invoice_prefix.toUpperCase(),
         payment_terms_days: input.payment_terms_days,

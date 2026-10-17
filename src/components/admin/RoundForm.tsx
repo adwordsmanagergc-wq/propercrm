@@ -210,7 +210,7 @@ export function RoundForm({
             ))}
           </ol>
         )}
-        <p className="text-blue-900/80 mt-2 text-xs">
+        <p className="mt-2 text-xs text-blue-900/80">
           Days the company does not work are skipped automatically.
         </p>
       </div>

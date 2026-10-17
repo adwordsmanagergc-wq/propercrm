@@ -1,7 +1,8 @@
 import type { Config } from 'tailwindcss';
 
 /**
- * Every colour below maps to a CSS custom property defined in `globals.css`.
+ * Every colour below maps to a CSS custom property defined in `globals.css`
+ * (as RGB channels, so opacity modifiers like `bg-grey-900/80` work).
  * Components must use these token names — never a raw hex value.
  */
 const config: Config = {
@@ -10,26 +11,26 @@ const config: Config = {
     extend: {
       colors: {
         blue: {
-          50: 'var(--blue-50)',
-          100: 'var(--blue-100)',
-          200: 'var(--blue-200)',
-          300: 'var(--blue-300)',
-          400: 'var(--blue-400)',
-          500: 'var(--blue-500)',
-          600: 'var(--blue-600)',
-          700: 'var(--blue-700)',
-          900: 'var(--blue-900)',
+          50: 'rgb(var(--blue-50-rgb) / <alpha-value>)',
+          100: 'rgb(var(--blue-100-rgb) / <alpha-value>)',
+          200: 'rgb(var(--blue-200-rgb) / <alpha-value>)',
+          300: 'rgb(var(--blue-300-rgb) / <alpha-value>)',
+          400: 'rgb(var(--blue-400-rgb) / <alpha-value>)',
+          500: 'rgb(var(--blue-500-rgb) / <alpha-value>)',
+          600: 'rgb(var(--blue-600-rgb) / <alpha-value>)',
+          700: 'rgb(var(--blue-700-rgb) / <alpha-value>)',
+          900: 'rgb(var(--blue-900-rgb) / <alpha-value>)',
         },
         grey: {
-          50: 'var(--grey-50)',
-          200: 'var(--grey-200)',
-          500: 'var(--grey-500)',
-          900: 'var(--grey-900)',
+          50: 'rgb(var(--grey-50-rgb) / <alpha-value>)',
+          200: 'rgb(var(--grey-200-rgb) / <alpha-value>)',
+          500: 'rgb(var(--grey-500-rgb) / <alpha-value>)',
+          900: 'rgb(var(--grey-900-rgb) / <alpha-value>)',
         },
-        white: 'var(--white)',
-        success: 'var(--success)',
-        warning: 'var(--warning)',
-        danger: 'var(--danger)',
+        white: 'rgb(var(--white-rgb) / <alpha-value>)',
+        success: 'rgb(var(--success-rgb) / <alpha-value>)',
+        warning: 'rgb(var(--warning-rgb) / <alpha-value>)',
+        danger: 'rgb(var(--danger-rgb) / <alpha-value>)',
       },
       borderRadius: {
         card: '12px',
@@ -37,9 +38,9 @@ const config: Config = {
         pill: '999px',
       },
       boxShadow: {
-        card: '0 1px 2px rgba(8, 53, 95, 0.04), 0 4px 16px rgba(8, 53, 95, 0.06)',
-        pop: '0 8px 32px rgba(8, 53, 95, 0.14)',
-        sticky: '0 -4px 20px rgba(8, 53, 95, 0.08)',
+        card: '0 1px 2px rgba(10, 42, 48, 0.04), 0 4px 16px rgba(10, 42, 48, 0.06)',
+        pop: '0 8px 32px rgba(10, 42, 48, 0.14)',
+        sticky: '0 -4px 20px rgba(10, 42, 48, 0.08)',
       },
       fontFamily: {
         sans: ['var(--font-sans)'],

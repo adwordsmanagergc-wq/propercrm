@@ -2,7 +2,7 @@
 
 import { useFormState } from 'react-dom';
 import { saveSettingsAction } from '@/app/actions/settings';
-import { Field, Input, Notice, Textarea } from '@/components/ui/Field';
+import { Checkbox, Field, Input, Notice, Textarea } from '@/components/ui/Field';
 import { SubmitButton } from '@/components/ui/SubmitButton';
 import { WEEKDAY_LABELS } from '@/lib/recurrence';
 import type { CompanyRow } from '@/lib/types/database';
@@ -41,11 +41,11 @@ export function SettingsForm({ company }: { company: CompanyRow }) {
 
       <section className="space-y-4">
         <h2 className="text-base font-semibold">Where you set off from</h2>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           <Field
             label="Start postcode"
             htmlFor="start_postcode"
-            hint="Routes are ordered outwards from here."
+            hint="The yard. Used for anyone with no start address of their own."
           >
             <Input
               id="start_postcode"
@@ -54,27 +54,19 @@ export function SettingsForm({ company }: { company: CompanyRow }) {
               defaultValue={company.start_postcode ?? ''}
             />
           </Field>
-          <Field label="Latitude" htmlFor="start_lat">
-            <Input
-              id="start_lat"
-              name="start_lat"
-              type="number"
-              step="0.000001"
-              inputMode="decimal"
-              defaultValue={company.start_lat ?? ''}
-            />
-          </Field>
-          <Field label="Longitude" htmlFor="start_lng">
-            <Input
-              id="start_lng"
-              name="start_lng"
-              type="number"
-              step="0.000001"
-              inputMode="decimal"
-              defaultValue={company.start_lng ?? ''}
-            />
-          </Field>
+          <input type="hidden" name="start_lat" value={company.start_lat ?? ''} />
+          <input type="hidden" name="start_lng" value={company.start_lng ?? ''} />
         </div>
+        <Checkbox
+          name="auto_route"
+          value="true"
+          label="Put each cleaner's day in driving order every night"
+          defaultChecked={company.auto_route}
+        />
+        <p className="text-sm text-grey-500">
+          Each cleaner&apos;s route starts from their own address, set on the Staff page. Turn this
+          off if you prefer to order rounds by hand.
+        </p>
       </section>
 
       <section className="space-y-3">

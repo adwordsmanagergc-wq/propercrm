@@ -1,70 +1,59 @@
+import Image from 'next/image';
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 import { ButtonLink } from '@/components/ui/Button';
 import { LogoMark, Wordmark } from '@/components/Logo';
-import { CameraIcon, InvoiceIcon, MapIcon } from '@/components/ui/Icons';
+import {
+  CameraIcon,
+  InvoiceIcon,
+  MapIcon,
+  PeopleIcon,
+  QuoteIcon,
+  RepeatIcon,
+} from '@/components/ui/Icons';
 import { getViewer } from '@/lib/auth';
-
-const FEATURES = [
-  {
-    icon: <CameraIcon className="h-7 w-7" />,
-    title: 'Photo proof, every time',
-    body: 'A job will not close until there is a before and an after photo, stamped with the time and the spot it was taken. No more "you never came".',
-  },
-  {
-    icon: <MapIcon className="h-7 w-7" />,
-    title: 'Rounds that plan themselves',
-    body: 'Set a customer to every four weeks and forget it. The next visit books itself, and the day is put in driving order at the tap of a button.',
-  },
-  {
-    icon: <InvoiceIcon className="h-7 w-7" />,
-    title: 'Get paid quicker',
-    body: 'Turn a week of finished jobs into an invoice in two clicks. See exactly who owes what, and chase them with a message that is already written.',
-  },
-];
+import { cn } from '@/lib/cn';
 
 const STEPS = [
-  [
-    'Add your round book',
-    'Customers, prices and how often you go. Import as you go — no big setup day.',
-  ],
-  [
-    'Your lads see their day',
-    'Each cleaner opens their phone to a list in driving order. Nothing else.',
-  ],
-  ['The office sees it live', 'Jobs tick over to done as they happen, photos and all.'],
+  {
+    title: 'Add your round book',
+    body: 'Customers, prices and how often you go. Add them as you go, no big setup day.',
+  },
+  {
+    title: 'Your cleaners see their day',
+    body: 'Each cleaner opens their phone to a list in driving order. Nothing else to learn.',
+  },
+  {
+    title: 'The office sees it live',
+    body: 'Jobs tick over to done as they happen, with the before and after photos attached.',
+  },
 ];
 
 const PRICING = [
   {
     name: 'Sole trader',
     price: '£14',
-    per: 'per month',
     blurb: 'Just you and the ladder.',
-    points: ['1 user', 'Unlimited customers', 'Photo proof', 'Invoices and payment tracking'],
-    cta: 'Start free trial',
+    points: ['1 user', 'Unlimited customers', 'Photo proof', 'Invoices and pay links'],
     featured: false,
   },
   {
     name: 'Small firm',
     price: '£39',
-    per: 'per month',
     blurb: 'The usual choice for a van or three.',
     points: [
       'Up to 8 cleaners',
       'Round map and route ordering',
-      'Per-cleaner stats',
-      'Aged debt reporting',
+      'Quotes and customer portal',
+      'Reports and aged debt',
     ],
-    cta: 'Start free trial',
     featured: true,
   },
   {
     name: 'Bigger outfit',
     price: '£89',
-    per: 'per month',
     blurb: 'More vans, more rounds, more paperwork.',
-    points: ['Unlimited cleaners', 'Multiple properties per customer', 'Priority support'],
-    cta: 'Start free trial',
+    points: ['Unlimited cleaners', 'Automatic reminders and chasers', 'Priority support'],
     featured: false,
   },
 ];
@@ -73,16 +62,16 @@ export default async function LandingPage() {
   const viewer = await getViewer();
 
   return (
-    <div className="min-h-dvh bg-white">
-      <header className="bg-white/90 sticky top-0 z-30 border-b border-grey-200 backdrop-blur">
-        <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5">
+    <div className="min-h-dvh bg-grey-50">
+      <header className="sticky top-0 z-30 border-b border-grey-200 bg-grey-50/85 backdrop-blur">
+        <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5">
           <Link href="/" aria-label="Proper CRM home">
             <Wordmark />
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <Link
               href="#pricing"
-              className="hidden rounded-btn px-3 py-2 text-sm font-semibold text-grey-500 hover:bg-blue-50 hover:text-blue-700 sm:block"
+              className="hidden rounded-btn px-3 py-2 text-sm font-semibold text-grey-500 transition-colors hover:bg-blue-50 hover:text-blue-700 sm:block"
             >
               Pricing
             </Link>
@@ -106,110 +95,180 @@ export default async function LandingPage() {
 
       <main id="main">
         {/* ------------------------------------------------------------- hero */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-blue-50 to-white">
-          <div className="mx-auto grid max-w-6xl gap-12 px-5 py-16 sm:py-24 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-            <div>
-              <p className="inline-flex items-center gap-2 rounded-pill border border-blue-200 bg-white px-3 py-1.5 text-sm font-semibold text-blue-700">
-                Built for window cleaners
-              </p>
-              <h1 className="mt-5 text-3xl font-semibold tracking-tight text-grey-900 sm:text-4xl">
-                Your round book, your lads and your invoices — in one place.
-              </h1>
-              <p className="mt-5 max-w-xl text-lg text-grey-500">
-                Proper CRM keeps track of who is due, who has been done and who still owes you. It
-                works on the phone in your pocket, in the rain, with one hand.
-              </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <ButtonLink href="/sign-up" size="lg">
-                  Start your free 14-day trial
-                </ButtonLink>
-                <ButtonLink href="#how" variant="secondary" size="lg">
-                  See how it works
-                </ButtonLink>
-              </div>
-              <p className="mt-4 text-sm text-grey-500">
-                No card needed. Set up your first round in about ten minutes.
-              </p>
+        <section className="mx-auto grid max-w-6xl gap-10 px-5 pb-16 pt-10 sm:pt-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-14 lg:pb-24">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.14em] text-blue-600">
+              For window cleaning firms
+            </p>
+            <h1 className="mt-4 text-[2.5rem] font-extrabold leading-[1.05] tracking-tight text-grey-900 sm:text-[3.5rem]">
+              Run the whole round from <span className="text-blue-500">your pocket.</span>
+            </h1>
+            <p className="mt-5 max-w-lg text-lg leading-relaxed text-grey-500">
+              Rounds, routes, photo proof, quotes and getting paid. Works on a phone, in the rain,
+              with one hand.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <ButtonLink href="/sign-up" size="lg">
+                Start free trial
+              </ButtonLink>
+              <ButtonLink href="#how" variant="secondary" size="lg">
+                See how it works
+              </ButtonLink>
             </div>
+          </div>
 
-            <PhoneMockup />
+          <div className="relative mx-auto w-full max-w-md lg:max-w-none">
+            <div
+              aria-hidden="true"
+              className="absolute -inset-3 hidden rotate-2 rounded-[28px] bg-blue-100 sm:block"
+            />
+            <Image
+              src="/images/hero-round.webp"
+              alt="A window cleaner using a water-fed pole on a row of terraced houses"
+              width={896}
+              height={1120}
+              priority
+              sizes="(min-width: 1024px) 460px, (min-width: 640px) 448px, 100vw"
+              className="relative aspect-[4/5] w-full rounded-[22px] object-cover shadow-pop"
+            />
           </div>
         </section>
 
-        {/* --------------------------------------------------------- features */}
-        <section className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
-          <h2 className="text-center text-2xl font-semibold tracking-tight">
-            Three jobs, done properly
+        {/* ------------------------------------------------------------ bento */}
+        <section className="mx-auto max-w-6xl px-5 pb-16 sm:pb-24">
+          <h2 className="max-w-xl text-2xl font-extrabold tracking-tight sm:text-3xl">
+            Everything the round needs, nothing it does not
           </h2>
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
-            {FEATURES.map((feature) => (
-              <div
-                key={feature.title}
-                className="rounded-card border border-grey-200 bg-white p-6 shadow-card"
-              >
-                <div className="flex h-12 w-12 items-center justify-center rounded-card bg-blue-50 text-blue-500">
-                  {feature.icon}
-                </div>
-                <h3 className="mt-4 text-lg font-semibold">{feature.title}</h3>
-                <p className="mt-2 text-grey-500">{feature.body}</p>
+
+          <div className="mt-10 grid gap-4 md:grid-cols-6">
+            <Tile className="relative min-h-[22rem] overflow-hidden p-0 md:col-span-4 md:row-span-2">
+              <Image
+                src="/images/squeegee.webp"
+                alt=""
+                fill
+                sizes="(min-width: 768px) 66vw, 100vw"
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-grey-900/90 via-grey-900/40 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
+                <TileIcon className="bg-white/15 text-white backdrop-blur">
+                  <CameraIcon className="h-6 w-6" />
+                </TileIcon>
+                <h3 className="mt-4 text-xl font-bold text-white">Photo proof, every time</h3>
+                <p className="mt-2 max-w-md text-white/85">
+                  A job will not close without a before and an after photo, stamped with the time
+                  and place. No more &ldquo;you never came&rdquo;.
+                </p>
               </div>
-            ))}
+            </Tile>
+
+            <Tile className="md:col-span-2">
+              <TileIcon>
+                <RepeatIcon className="h-6 w-6" />
+              </TileIcon>
+              <h3 className="mt-4 text-lg font-bold">Rounds that book themselves</h3>
+              <p className="mt-2 text-grey-500">
+                Every four weeks, set once. The next visit books itself.
+              </p>
+            </Tile>
+
+            <Tile className="md:col-span-2">
+              <TileIcon>
+                <MapIcon className="h-6 w-6" />
+              </TileIcon>
+              <h3 className="mt-4 text-lg font-bold">The shortest route, every day</h3>
+              <p className="mt-2 text-grey-500">
+                Each cleaner&apos;s stops, ordered from their own front door. Works with no signal.
+              </p>
+            </Tile>
+
+            <Tile className="border-blue-200 bg-blue-50 md:col-span-3">
+              <TileIcon className="bg-blue-500 text-white">
+                <InvoiceIcon className="h-6 w-6" />
+              </TileIcon>
+              <h3 className="mt-4 text-lg font-bold">Get paid quicker</h3>
+              <p className="mt-2 text-grey-500">
+                Every invoice carries a pay link for card, Apple Pay or Google Pay. Overdue chasers
+                go out on their own.
+              </p>
+            </Tile>
+
+            <Tile className="md:col-span-3">
+              <div className="flex gap-2">
+                <TileIcon>
+                  <QuoteIcon className="h-6 w-6" />
+                </TileIcon>
+                <TileIcon>
+                  <PeopleIcon className="h-6 w-6" />
+                </TileIcon>
+              </div>
+              <h3 className="mt-4 text-lg font-bold">Quotes and a customer page</h3>
+              <p className="mt-2 text-grey-500">
+                Prospects accept a quote on their phone. Customers skip a clean, book an extra one
+                or pay, without ringing you.
+              </p>
+            </Tile>
           </div>
         </section>
 
         {/* ------------------------------------------------------------- how */}
-        <section id="how" className="bg-blue-50 py-16 sm:py-20">
-          <div className="mx-auto max-w-6xl px-5">
-            <h2 className="text-center text-2xl font-semibold tracking-tight">
-              Up and running in an afternoon
-            </h2>
-            <ol className="mt-10 grid gap-5 md:grid-cols-3">
-              {STEPS.map(([title, body], index) => (
-                <li
-                  key={title}
-                  className="rounded-card border border-blue-200 bg-white p-6 shadow-card"
-                >
-                  <span className="flex h-9 w-9 items-center justify-center rounded-pill bg-blue-500 text-base font-semibold text-white">
-                    {index + 1}
-                  </span>
-                  <h3 className="mt-4 text-lg font-semibold">{title}</h3>
-                  <p className="mt-2 text-grey-500">{body}</p>
-                </li>
+        <section id="how" className="border-y border-grey-200 bg-white">
+          <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 sm:py-24 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+            <div>
+              <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
+                Up and running in an afternoon
+              </h2>
+              <p className="mt-4 max-w-sm text-grey-500">
+                No training day and no manual. If you can send a text, you can run Proper.
+              </p>
+            </div>
+            <dl className="divide-y divide-grey-200 border-y border-grey-200">
+              {STEPS.map((step) => (
+                <div key={step.title} className="grid gap-1 py-6 sm:grid-cols-[14rem_1fr] sm:gap-8">
+                  <dt className="text-lg font-bold text-grey-900">{step.title}</dt>
+                  <dd className="text-grey-500">{step.body}</dd>
+                </div>
               ))}
-            </ol>
+            </dl>
           </div>
         </section>
 
         {/* --------------------------------------------------------- pricing */}
-        <section id="pricing" className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
-          <h2 className="text-center text-2xl font-semibold tracking-tight">
-            Simple pricing, cancel any time
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-center text-grey-500">
-            Every plan includes photo proof, rounds, invoicing and the mobile app. Fourteen days
-            free, no card up front.
-          </p>
+        <section id="pricing" className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
+          <div className="max-w-xl">
+            <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
+              Simple pricing, cancel any time
+            </h2>
+            <p className="mt-3 text-grey-500">
+              Fourteen days free on every plan. No card up front.
+            </p>
+          </div>
 
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="mt-10 grid items-start gap-4 md:grid-cols-3">
             {PRICING.map((plan) => (
               <div
                 key={plan.name}
-                className={
+                className={cn(
+                  'rounded-[16px] border bg-white p-6',
                   plan.featured
-                    ? 'relative rounded-card border-2 border-blue-500 bg-white p-6 shadow-pop'
-                    : 'rounded-card border border-grey-200 bg-white p-6 shadow-card'
-                }
+                    ? 'border-blue-500 shadow-pop ring-1 ring-blue-500 md:-mt-3 md:pb-9'
+                    : 'border-grey-200 shadow-card',
+                )}
               >
-                {plan.featured ? (
-                  <span className="absolute -top-3 left-6 rounded-pill bg-blue-500 px-3 py-1 text-xs font-semibold text-white">
-                    Most popular
-                  </span>
-                ) : null}
-                <h3 className="text-lg font-semibold">{plan.name}</h3>
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="text-lg font-bold">{plan.name}</h3>
+                  {plan.featured ? (
+                    <span className="rounded-pill bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">
+                      Most popular
+                    </span>
+                  ) : null}
+                </div>
                 <p className="mt-1 text-sm text-grey-500">{plan.blurb}</p>
-                <p className="mt-5">
-                  <span className="text-3xl font-semibold tabular-nums">{plan.price}</span>{' '}
-                  <span className="text-sm text-grey-500">{plan.per}</span>
+                <p className="mt-5 flex items-baseline gap-1.5">
+                  <span className="text-4xl font-extrabold tabular-nums tracking-tight">
+                    {plan.price}
+                  </span>
+                  <span className="text-sm text-grey-500">per month</span>
                 </p>
                 <ul className="mt-5 space-y-2.5 text-sm">
                   {plan.points.map((point) => (
@@ -235,7 +294,7 @@ export default async function LandingPage() {
                   variant={plan.featured ? 'primary' : 'secondary'}
                   className="mt-6 w-full"
                 >
-                  {plan.cta}
+                  Start free trial
                 </ButtonLink>
               </div>
             ))}
@@ -243,15 +302,17 @@ export default async function LandingPage() {
         </section>
 
         {/* ------------------------------------------------------------- cta */}
-        <section className="bg-blue-500">
-          <div className="mx-auto max-w-3xl px-5 py-16 text-center">
-            <h2 className="text-2xl font-semibold tracking-tight text-white">
-              Stop running the round off a notebook
-            </h2>
-            <p className="mt-3 text-blue-100">
-              Fourteen days free. If it does not save you an evening a week, walk away.
-            </p>
-            <ButtonLink href="/sign-up" variant="secondary" size="lg" className="mt-7">
+        <section className="mx-auto max-w-6xl px-5 pb-16 sm:pb-24">
+          <div className="flex flex-col items-start justify-between gap-6 rounded-[22px] border border-blue-200 bg-blue-50 px-6 py-10 sm:px-10 md:flex-row md:items-center">
+            <div>
+              <h2 className="text-2xl font-extrabold tracking-tight">
+                Stop running the round off a notebook
+              </h2>
+              <p className="mt-2 text-grey-500">
+                Fourteen days free. If it does not save you an evening a week, walk away.
+              </p>
+            </div>
+            <ButtonLink href="/sign-up" size="lg" className="shrink-0">
               Start free trial
             </ButtonLink>
           </div>
@@ -278,54 +339,27 @@ export default async function LandingPage() {
   );
 }
 
-/** A still of the cleaner's screen — the thing people actually buy. */
-function PhoneMockup() {
-  const jobs = [
-    { seq: 1, name: 'Margaret', address: '12 Elm Grove', postcode: 'RG1 5AA', done: true },
-    { seq: 2, name: 'Paul', address: '48 Priory Avenue', postcode: 'RG4 7SB', done: true },
-    { seq: 3, name: 'Susan', address: '7 Kendrick Road', postcode: 'RG1 5DU', done: false },
-    { seq: 4, name: 'David', address: '119 Bath Road', postcode: 'RG30 2BA', done: false },
-  ];
-
+function Tile({ className, children }: { className?: string; children: ReactNode }) {
   return (
-    <div className="mx-auto w-full max-w-xs">
-      <div className="rounded-[2rem] border-8 border-grey-900 bg-grey-900 shadow-pop">
-        <div className="overflow-hidden rounded-[1.4rem] bg-grey-50">
-          <div className="bg-blue-500 px-4 pb-4 pt-6 text-white">
-            <p className="text-sm text-blue-100">Wednesday</p>
-            <p className="text-xl font-semibold">4 jobs today</p>
-          </div>
-          <ul className="space-y-2 p-3">
-            {jobs.map((job) => (
-              <li
-                key={job.seq}
-                className="flex items-center gap-3 rounded-card border border-grey-200 bg-white p-3 shadow-card"
-              >
-                <span
-                  className={
-                    job.done
-                      ? 'flex h-9 w-9 shrink-0 items-center justify-center rounded-pill bg-success text-sm font-semibold text-white'
-                      : 'flex h-9 w-9 shrink-0 items-center justify-center rounded-pill bg-blue-100 text-sm font-semibold text-blue-700'
-                  }
-                >
-                  {job.done ? '✓' : job.seq}
-                </span>
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-semibold text-grey-900">
-                    {job.name} — {job.address}
-                  </span>
-                  <span className="block text-xs text-grey-500">{job.postcode}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-          <div className="px-3 pb-4">
-            <div className="flex h-12 items-center justify-center rounded-btn bg-blue-500 text-base font-semibold text-white">
-              Start job 3
-            </div>
-          </div>
-        </div>
-      </div>
+    <div
+      className={cn('rounded-[16px] border border-grey-200 bg-white p-6 shadow-card', className)}
+    >
+      {children}
     </div>
+  );
+}
+
+/** No runtime class merging here, so callers swap the whole colour pair. */
+function TileIcon({
+  className = 'bg-blue-50 text-blue-600',
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <span className={cn('flex h-11 w-11 items-center justify-center rounded-btn', className)}>
+      {children}
+    </span>
   );
 }

@@ -215,7 +215,7 @@ export default async function PortalPage({ params }: { params: { token: string }
                             className="aspect-square w-full rounded-btn object-cover"
                             loading="lazy"
                           />
-                          <span className="bg-white/90 absolute left-1.5 top-1.5 rounded-pill px-2 py-0.5 text-xs font-semibold capitalize">
+                          <span className="absolute left-1.5 top-1.5 rounded-pill bg-white/90 px-2 py-0.5 text-xs font-semibold capitalize">
                             {photo.kind}
                           </span>
                         </a>

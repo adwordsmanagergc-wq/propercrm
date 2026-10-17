@@ -46,7 +46,7 @@ function escapeHtml(text: string) {
 export function textToHtml(text: string): string {
   const linked = escapeHtml(text).replace(
     /(https?:\/\/[^\s<]+)/g,
-    (url) => `<a href="${url}" style="color:#1565C0">${url}</a>`,
+    (url) => `<a href="${url}" style="color:#0A6A75">${url}</a>`,
   );
   const paragraphs = linked
     .split(/\n{2,}/)
@@ -54,7 +54,7 @@ export function textToHtml(text: string): string {
     .join('');
   return (
     '<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:16px;' +
-    `line-height:1.5;color:#0F172A;max-width:560px">${paragraphs}</div>`
+    `line-height:1.5;color:#0D1B22;max-width:560px">${paragraphs}</div>`
   );
 }
 

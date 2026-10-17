@@ -10,10 +10,18 @@ invites its cleaners, and runs its rounds from it.
 
 ## What it does
 
-**For the office** — a live Today screen, a drag-and-drop schedule, a round map
-with nearest-neighbour route ordering, the customer round book, recurring
-rounds that book their own visits, invoicing with aged debt, and staff
-management.
+**For the office** — a live Today screen, a drag-and-drop schedule, a round map,
+the customer round book, recurring rounds that book their own visits,
+invoicing with aged debt, and staff management.
+
+**Routes** — the owner sets where each cleaner starts their day (usually home)
+on the Staff page. Every night each cleaner's day is put in the shortest
+driving order from there: nearest-neighbour, then 2-opt to untangle crossed
+legs. The cleaner can re-run it from the phone with **Best route**, which keeps
+finished jobs in place and routes the rest from where they are now. Postcodes
+are turned into map positions automatically (postcodes.io, no key needed), so
+nobody types coordinates. Firms that order by hand can turn the nightly run off
+in Settings.
 
 **For the cleaner** — a different app on the same routes. Three tabs, one job
 per card, one giant button. A job will not close until there is a before photo

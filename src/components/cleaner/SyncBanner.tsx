@@ -18,7 +18,7 @@ export function SyncBanner() {
       : 'No signal — your work is saved on this phone';
 
   return (
-    <div className="border-warning/40 sticky top-0 z-30 border-b bg-white">
+    <div className="sticky top-0 z-30 border-b border-warning/40 bg-white">
       <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-2.5">
         <CloudOffIcon className="h-5 w-5 shrink-0 text-warning" />
         <p className="flex-1 text-sm font-semibold text-grey-900">{label}</p>

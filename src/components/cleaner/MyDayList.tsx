@@ -1,12 +1,15 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { myBestRouteAction } from '@/app/actions/jobs';
 import { JobCard } from '@/components/cleaner/JobCard';
 import { MyDayMap } from '@/components/cleaner/MyDayMap';
 import { useSync } from '@/components/cleaner/SyncProvider';
 import { EmptyState } from '@/components/ui/States';
 import { cn } from '@/lib/cn';
-import { SprayIcon } from '@/components/ui/Icons';
+import { MapIcon, SprayIcon } from '@/components/ui/Icons';
+import { Button } from '@/components/ui/Button';
 import { cacheJobs, readCachedJobs } from '@/lib/offline/cache';
 import { pending, type QueueEntry } from '@/lib/offline/queue';
 import type { MyJobRow } from '@/lib/types/database';
@@ -26,6 +29,22 @@ export function MyDayList({ jobs, date }: { jobs: MyJobRow[]; date: string }) {
   const [fromCache, setFromCache] = useState(false);
   const [queued, setQueued] = useState<QueueEntry[]>([]);
   const [view, setView] = useState<'list' | 'map'>('list');
+  const router = useRouter();
+  const [routing, startRouting] = useTransition();
+  const [routeNote, setRouteNote] = useState<string | null>(null);
+
+  function bestRoute() {
+    setRouteNote(null);
+    startRouting(async () => {
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        setRouteNote('Needs signal. Your current order is saved on this phone.');
+        return;
+      }
+      const result = await myBestRouteAction({ date });
+      setRouteNote(result.ok ? (result.message ?? 'Done') : result.error);
+      if (result.ok) router.refresh();
+    });
+  }
 
   useEffect(() => {
     if (jobs.length > 0) {
@@ -119,6 +138,18 @@ export function MyDayList({ jobs, date }: { jobs: MyJobRow[]; date: string }) {
           ))}
         </div>
       </div>
+
+      {remaining > 1 ? (
+        <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+          <Button variant="secondary" size="sm" onClick={bestRoute} disabled={routing}>
+            <MapIcon className="h-4 w-4" />
+            {routing ? 'Working out the route…' : 'Best route'}
+          </Button>
+          <p className="text-sm text-grey-500" role="status">
+            {routeNote ?? 'Shortest drive from where you are now.'}
+          </p>
+        </div>
+      ) : null}
 
       {view === 'map' ? (
         <MyDayMap jobs={todaysJobs} />

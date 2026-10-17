@@ -384,6 +384,60 @@ begin
 end;
 $$;
 
+-- ---------------------------------------------------------------------------
+-- 8. Start points and re-ordering a day.
+-- ---------------------------------------------------------------------------
+do $$
+declare
+  v_manager uuid := '22222222-2222-4222-8222-222222222222';
+  v_dave    uuid := '22222222-2222-4222-8222-222222222223';
+  v_sam     uuid := '22222222-2222-4222-8222-222222222224';
+  v_date    date;
+  v_mine    uuid[];
+  v_theirs  uuid;
+  v_seq     integer;
+  v_count   integer;
+begin
+  raise notice 'Start points and route order';
+
+  perform pg_temp.as_user(v_manager, 'nina@propercrm.test');
+  update public.profiles set start_postcode = 'RG4 7SB', start_lat = 51.47, start_lng = -0.96
+  where id = v_dave;
+  perform pg_temp.ok((select start_postcode from public.profiles where id = v_dave) = 'RG4 7SB',
+                     'the office can set a cleaner''s start point');
+  reset role;
+
+  perform pg_temp.as_user(v_dave, 'dave@propercrm.test');
+  perform pg_temp.denied(
+    format('update public.profiles set start_postcode = ''RG1 1AA'' where id = %L', v_dave),
+    'a cleaner moving their own start point');
+  update public.profiles set phone = '07700 900199' where id = v_dave;
+  perform pg_temp.ok((select phone from public.profiles where id = v_dave) = '07700 900199',
+                     'a cleaner can still update their own phone');
+
+  -- Reverse Dave's own day, with one of Sam's jobs slipped into the list.
+  select scheduled_date into v_date from public.my_jobs order by scheduled_date limit 1;
+  select array_agg(id order by sequence desc) into v_mine
+  from public.my_jobs where scheduled_date = v_date;
+  reset role;
+  select id, sequence into v_theirs, v_seq from public.jobs
+  where assigned_to = v_sam and scheduled_date = v_date limit 1;
+
+  perform pg_temp.as_user(v_dave, 'dave@propercrm.test');
+  v_count := public.reorder_my_day(v_date, v_mine || coalesce(array[v_theirs], '{}'));
+  perform pg_temp.ok(v_count = array_length(v_mine, 1),
+                     'reorder_my_day touches only the cleaner''s own jobs');
+  perform pg_temp.ok((select id from public.my_jobs where scheduled_date = v_date and sequence = 1)
+                       = v_mine[1],
+                     'the cleaner''s chosen order is saved');
+  reset role;
+
+  perform pg_temp.ok(v_theirs is null
+                       or (select sequence from public.jobs where id = v_theirs) = v_seq,
+                     'another cleaner''s job keeps its place');
+end;
+$$;
+
 do $$
 begin
   raise notice '';

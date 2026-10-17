@@ -4,13 +4,15 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { fail, ok, parseForm, run, type ActionResult } from '@/lib/actions';
 import { assertStaff, assertViewer } from '@/lib/auth';
-import { nearestNeighbourOrder } from '@/lib/route';
+import { startFor, planCompanyDay } from '@/lib/db/routes';
+import { planDay } from '@/lib/route';
 import { createClient } from '@/lib/supabase/server';
 import {
   bulkAssignSchema,
   completeJobSchema,
   jobSchema,
   moveJobSchema,
+  myBestRouteSchema,
   optimiseRouteSchema,
   skipJobSchema,
   startJobSchema,
@@ -86,57 +88,55 @@ export async function bulkAssignDayAction(input: unknown): Promise<ActionResult<
 }
 
 /**
- * Reorders a day into driving order, nearest-neighbour from the company's
- * yard, and writes the new sequence back.
+ * Puts a day in driving order, each cleaner from their own start point (or
+ * the yard), and writes the new sequence back.
  */
 export async function optimiseRouteAction(input: unknown): Promise<ActionResult<number>> {
   return run(async () => {
-    await assertStaff();
+    const viewer = await assertStaff();
     const { date, cleanerId } = optimiseRouteSchema.parse(input);
-    const supabase = createClient();
 
-    const [{ data: company }, jobsQuery] = await Promise.all([
-      supabase.from('companies').select('start_lat, start_lng').maybeSingle(),
-      (async () => {
-        let query = supabase
-          .from('jobs')
-          .select('id, sequence, customer:customers(lat, lng), property:properties(lat, lng)')
-          .eq('scheduled_date', date)
-          .neq('status', 'cancelled');
-        if (cleanerId) query = query.eq('assigned_to', cleanerId);
-        return query;
-      })(),
-    ]);
-
-    if (jobsQuery.error) return fail(jobsQuery.error.message);
-    const jobs = jobsQuery.data ?? [];
-    if (jobs.length === 0) return fail('There are no jobs to put in order on that day');
-
-    const points = jobs.map((job) => ({
-      id: job.id,
-      lat: job.property?.lat ?? job.customer?.lat ?? null,
-      lng: job.property?.lng ?? job.customer?.lng ?? null,
-    }));
-
-    const start =
-      typeof company?.start_lat === 'number' && typeof company?.start_lng === 'number'
-        ? { lat: company.start_lat, lng: company.start_lng }
-        : null;
-
-    const ordered = nearestNeighbourOrder(points, start);
-
-    const updates = ordered.map((point, index) =>
-      supabase
-        .from('jobs')
-        .update({ sequence: index + 1 })
-        .eq('id', point.id),
-    );
-    const results = await Promise.all(updates);
-    const firstError = results.find((result) => result.error)?.error;
-    if (firstError) return fail(firstError.message);
+    const placed = await planCompanyDay(createClient(), {
+      companyId: viewer.company.id,
+      date,
+      cleanerId,
+    });
+    if (placed === 0) return fail('There are no jobs to put in order on that day');
 
     revalidateJobViews();
-    return ok(ordered.length, `${ordered.length} jobs put in driving order`);
+    return ok(placed, `${placed} jobs put in driving order`);
+  });
+}
+
+/**
+ * The cleaner's own "best route" button. Whatever is already done stays
+ * where it is; the rest is routed from where they are now.
+ */
+export async function myBestRouteAction(input: unknown): Promise<ActionResult<number>> {
+  return run(async () => {
+    const viewer = await assertViewer();
+    const { date } = myBestRouteSchema.parse(input);
+    const supabase = createClient();
+
+    const { data, error } = await supabase
+      .from('my_jobs')
+      .select('id, status, lat, lng')
+      .eq('scheduled_date', date)
+      .order('sequence');
+    if (error) return fail(error.message);
+    if (!data || data.length === 0) return fail('Nothing booked in for you that day');
+
+    const start = startFor(viewer.profile, startFor(viewer.company, null));
+    const ordered = planDay(data, start);
+
+    const { error: saveError } = await supabase.rpc('reorder_my_day', {
+      p_date: date,
+      p_jobs: ordered.map((job) => job.id),
+    });
+    if (saveError) return fail(saveError.message);
+
+    revalidateJobViews();
+    return ok(ordered.length, 'Your day is in driving order');
   });
 }
 

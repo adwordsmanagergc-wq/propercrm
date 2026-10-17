@@ -92,27 +92,10 @@ export function CustomerForm({ customer }: { customer?: Customer }) {
           </Select>
         </Field>
 
-        <Field label="Latitude" htmlFor="lat" hint="Optional — used by the round map.">
-          <Input
-            id="lat"
-            name="lat"
-            type="number"
-            step="0.000001"
-            inputMode="decimal"
-            defaultValue={customer?.lat ?? ''}
-          />
-        </Field>
-
-        <Field label="Longitude" htmlFor="lng">
-          <Input
-            id="lng"
-            name="lng"
-            type="number"
-            step="0.000001"
-            inputMode="decimal"
-            defaultValue={customer?.lng ?? ''}
-          />
-        </Field>
+        {/* The map pin comes from the postcode when it is saved. The old
+            position rides along in case the lookup has no answer. */}
+        <input type="hidden" name="lat" value={customer?.lat ?? ''} />
+        <input type="hidden" name="lng" value={customer?.lng ?? ''} />
       </div>
 
       <Field

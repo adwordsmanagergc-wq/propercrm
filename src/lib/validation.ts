@@ -23,6 +23,13 @@ export const uuid = z.string().uuid('Not a valid id');
  * string "false" — which `z.coerce.boolean()` would read as true. This reads
  * form values the way forms actually send them.
  */
+/** A blank box means "no coordinate", not zero: 0,0 is in the Gulf of Guinea. */
+const coordinate = (limit: number) =>
+  z.preprocess(
+    (value) => (value === '' || value === undefined ? null : value),
+    z.coerce.number().min(-limit).max(limit).nullable(),
+  );
+
 const checkbox = (fallback: boolean) =>
   z
     .union([z.boolean(), z.string()])
@@ -98,8 +105,8 @@ export const customerSchema = z.object({
   address_line2: optionalText(160),
   city: optionalText(80),
   postcode: trimmed(12),
-  lat: z.coerce.number().min(-90).max(90).nullable().optional(),
-  lng: z.coerce.number().min(-180).max(180).nullable().optional(),
+  lat: coordinate(90).optional(),
+  lng: coordinate(180).optional(),
   access_notes: optionalText(600),
   gate_code: optionalText(40),
   dog_on_site: checkbox(false),
@@ -116,8 +123,8 @@ export const propertySchema = z.object({
   address_line2: optionalText(160),
   city: optionalText(80),
   postcode: trimmed(12),
-  lat: z.coerce.number().min(-90).max(90).nullable().optional(),
-  lng: z.coerce.number().min(-180).max(180).nullable().optional(),
+  lat: coordinate(90).optional(),
+  lng: coordinate(180).optional(),
   window_count: z.coerce.number().int().min(0).max(500).nullable().optional(),
   storeys: z.coerce.number().int().min(1).max(10).nullable().optional(),
   has_conservatory: checkbox(false),
@@ -200,6 +207,8 @@ export const skipJobSchema = z.object({
   notes: optionalText(2000),
 });
 
+export const myBestRouteSchema = z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) });
+
 export const optimiseRouteSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   cleanerId: z
@@ -239,6 +248,12 @@ export const staffUpdateSchema = z.object({
   is_active: checkbox(true).optional(),
 });
 
+export const staffStartSchema = z.object({
+  profileId: uuid,
+  start_address: optionalText(200),
+  start_postcode: optionalText(12),
+});
+
 export const settingsSchema = z.object({
   name: trimmed(120).min(2, 'What is the business called?'),
   phone: optionalText(40),
@@ -249,8 +264,9 @@ export const settingsSchema = z.object({
     .optional(),
   timezone: trimmed(60).default('Europe/London'),
   start_postcode: optionalText(12),
-  start_lat: z.coerce.number().min(-90).max(90).nullable().optional(),
-  start_lng: z.coerce.number().min(-180).max(180).nullable().optional(),
+  start_lat: coordinate(90).optional(),
+  start_lng: coordinate(180).optional(),
+  auto_route: checkbox(false),
   working_days: z.array(z.coerce.number().int().min(1).max(7)).min(1, 'Pick at least one day'),
   invoice_prefix: trimmed(10).min(1, 'A prefix is required'),
   payment_terms_days: z.coerce.number().int().min(0).max(180),

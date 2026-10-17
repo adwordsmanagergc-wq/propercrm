@@ -242,3 +242,15 @@ begin
   update public.companies set next_invoice_number = 1000 + v_n + 1 where id = v_company;
 end;
 $$;
+
+-- Where each cleaner sets off. Their day is routed outwards from here, so the
+-- three of them start on different sides of Reading.
+update public.profiles set start_address = '14 Kidmore Road', start_postcode = 'RG4 7LU',
+  start_lat = 51.472935, start_lng = -0.979530
+where id = '22222222-2222-4222-8222-222222222223';  -- Dave, Caversham
+update public.profiles set start_address = '3 Bath Road', start_postcode = 'RG30 2EU',
+  start_lat = 51.444571, start_lng = -1.018207
+where id = '22222222-2222-4222-8222-222222222224';  -- Sam, west Reading
+update public.profiles set start_address = '27 Wokingham Road', start_postcode = 'RG6 1JH',
+  start_lat = 51.452011, start_lng = -0.945084
+where id = '22222222-2222-4222-8222-222222222225';  -- Ellie, Earley

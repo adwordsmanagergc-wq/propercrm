@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { fail, ok, parseForm, run, type ActionResult } from '@/lib/actions';
 import { assertStaff } from '@/lib/auth';
+import { resolveCoords } from '@/lib/geocode';
 import { createClient } from '@/lib/supabase/server';
 import { customerSchema, propertySchema, uuid } from '@/lib/validation';
 
@@ -27,8 +28,7 @@ export async function saveCustomerAction(
       address_line2: input.address_line2 ?? null,
       city: input.city ?? null,
       postcode: input.postcode.toUpperCase(),
-      lat: input.lat ?? null,
-      lng: input.lng ?? null,
+      ...(await resolveCoords(input.postcode, input.lat, input.lng)),
       access_notes: input.access_notes ?? null,
       gate_code: input.gate_code ?? null,
       dog_on_site: input.dog_on_site,
@@ -111,8 +111,7 @@ export async function savePropertyAction(
       address_line2: input.address_line2 ?? null,
       city: input.city ?? null,
       postcode: input.postcode.toUpperCase(),
-      lat: input.lat ?? null,
-      lng: input.lng ?? null,
+      ...(await resolveCoords(input.postcode, input.lat, input.lng)),
       window_count: input.window_count ?? null,
       storeys: input.storeys ?? null,
       has_conservatory: input.has_conservatory,

@@ -224,7 +224,7 @@ export function JobFlow({ job }: { job: MyJobRow }) {
 
       {/* ----------------------------------------------------- the job flow */}
       {finished ? (
-        <section className="border-success/30 rounded-card border bg-white p-5 text-center shadow-card">
+        <section className="rounded-card border border-success/30 bg-white p-5 text-center shadow-card">
           <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-pill bg-success text-white">
             <CheckIcon className="h-7 w-7" />
           </span>
@@ -385,7 +385,7 @@ function PhotoStep({
         <span
           className={
             count > 0
-              ? 'border-success/30 inline-flex items-center gap-1 rounded-pill border px-2.5 py-1 text-xs font-semibold text-success'
+              ? 'inline-flex items-center gap-1 rounded-pill border border-success/30 px-2.5 py-1 text-xs font-semibold text-success'
               : 'rounded-pill border border-grey-200 px-2.5 py-1 text-xs font-semibold text-grey-500'
           }
         >

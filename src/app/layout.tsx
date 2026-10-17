@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Plus_Jakarta_Sans } from 'next/font/google';
 import { ServiceWorker } from '@/components/ServiceWorker';
 import './globals.css';
 
@@ -7,10 +7,10 @@ import './globals.css';
  * Self-hosted at build time, so the app has no runtime dependency on Google's
  * servers — it must render the same with no signal.
  */
-const inter = Inter({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-inter',
+  variable: '--font-display',
   fallback: ['ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
 });
 
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#1E88E5',
+  themeColor: '#0D1B22',
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
@@ -40,7 +40,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-GB" className={inter.variable}>
+    <html lang="en-GB" className={jakarta.variable}>
       <body className="bg-grey-50 text-grey-900 antialiased">
         <a
           href="#main"

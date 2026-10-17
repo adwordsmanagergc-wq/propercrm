@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { useFormState } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { cancelInviteAction, inviteStaffAction, updateStaffAction } from '@/app/actions/staff';
+import { StartPointForm } from '@/components/admin/StartPointForm';
 import { Button } from '@/components/ui/Button';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
 import { CopyButton } from '@/components/ui/CopyButton';
@@ -21,6 +22,9 @@ export interface StaffMember {
   role: UserRole;
   phone: string | null;
   isActive: boolean;
+  startAddress: string | null;
+  startPostcode: string | null;
+  startLocated: boolean;
   completed: number;
   skipped: number;
   avgMinutes: number;
@@ -158,6 +162,16 @@ export function StaffBoard({
                 </div>
 
                 {!person.isActive ? <Pill tone="danger">Deactivated</Pill> : null}
+
+                {person.isActive ? (
+                  <StartPointForm
+                    profileId={person.id}
+                    name={person.fullName.split(' ')[0] ?? person.fullName}
+                    address={person.startAddress}
+                    postcode={person.startPostcode}
+                    located={person.startLocated}
+                  />
+                ) : null}
               </li>
             ))}
           </ul>

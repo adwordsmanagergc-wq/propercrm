@@ -90,7 +90,7 @@ export default async function QuotePage({ params }: { params: { id: string } }) 
           </ol>
 
           {quote.status === 'accepted' && customer ? (
-            <p className="border-success/30 rounded-btn border bg-white px-3.5 py-3 text-sm">
+            <p className="rounded-btn border border-success/30 bg-white px-3.5 py-3 text-sm">
               Accepted. {customer.name} is now a customer with a round booked in.{' '}
               <Link href={`/app/customers/${customer.id}`} className="font-semibold text-blue-700">
                 Open their record
@@ -98,7 +98,7 @@ export default async function QuotePage({ params }: { params: { id: string } }) 
             </p>
           ) : null}
           {quote.status === 'declined' ? (
-            <p className="border-danger/30 rounded-btn border bg-white px-3.5 py-3 text-sm">
+            <p className="rounded-btn border border-danger/30 bg-white px-3.5 py-3 text-sm">
               Declined{quote.decline_reason ? `: “${quote.decline_reason}”` : '.'}
             </p>
           ) : null}

@@ -3,34 +3,56 @@
 @tailwind utilities;
 
 /* ---------------------------------------------------------------------------
-   Proper CRM theme — light blue & white, "freshly cleaned glass".
+   Proper CRM theme — "clean glass": deep ink neutrals, one fresh teal accent.
+   The token names stay `blue-*` so every component keeps working; the values
+   are the teal ramp. --blue-500 and up carry white text at WCAG AA.
    v1 is light-only on purpose: every surface is painted explicitly.
 --------------------------------------------------------------------------- */
 :root {
   color-scheme: light;
 
-  --blue-50: #f2f8ff;
-  --blue-100: #e1f0ff;
-  --blue-200: #beddff;
-  --blue-300: #8ac2ff;
-  --blue-400: #4fa3fb;
-  --blue-500: #1e88e5;
-  --blue-600: #1470c4;
-  --blue-700: #0e559a;
-  --blue-900: #08355f;
+  --blue-50: #effafb;
+  --blue-100: #d9f3f5;
+  --blue-200: #aee3e8;
+  --blue-300: #74ccd5;
+  --blue-400: #2fadbb;
+  --blue-500: #0b7f8c;
+  --blue-600: #0a6a75;
+  --blue-700: #095862;
+  --blue-900: #0a2a30;
 
   --white: #ffffff;
-  --grey-50: #f7fafc;
-  --grey-200: #e5ebf1;
-  --grey-500: #6b7b8c;
-  --grey-900: #12212e;
+  --grey-50: #f4f7f8;
+  --grey-200: #e1e7ea;
+  --grey-500: #56636c;
+  --grey-900: #0d1b22;
 
-  --success: #16a34a;
-  --warning: #f59e0b;
-  --danger: #dc2626;
+  --success: #15803d;
+  --warning: #b45309;
+  --danger: #c62828;
+
+  /* The same colours as space-separated RGB channels, so Tailwind's opacity
+     modifiers (bg-grey-900/80) work. Keep the two lists in step. */
+  --blue-50-rgb: 239 250 251;
+  --blue-100-rgb: 217 243 245;
+  --blue-200-rgb: 174 227 232;
+  --blue-300-rgb: 116 204 213;
+  --blue-400-rgb: 47 173 187;
+  --blue-500-rgb: 11 127 140;
+  --blue-600-rgb: 10 106 117;
+  --blue-700-rgb: 9 88 98;
+  --blue-900-rgb: 10 42 48;
+  --white-rgb: 255 255 255;
+  --grey-50-rgb: 244 247 248;
+  --grey-200-rgb: 225 231 234;
+  --grey-500-rgb: 86 99 108;
+  --grey-900-rgb: 13 27 34;
+  --success-rgb: 21 128 61;
+  --warning-rgb: 180 83 9;
+  --danger-rgb: 198 40 40;
 
   --font-sans:
-    var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    var(--font-display), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif;
 
   /* Safe-area insets for the installed mobile app */
@@ -153,6 +175,7 @@
 @media print {
   :root {
     --grey-50: #ffffff;
+    --grey-50-rgb: 255 255 255;
   }
 
   body {

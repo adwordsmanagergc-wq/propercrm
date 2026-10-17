@@ -32,7 +32,7 @@ export function Modal({
         type="button"
         aria-label="Close"
         onClick={onClose}
-        className="bg-blue-900/25 absolute inset-0 h-full w-full animate-fade-in cursor-default"
+        className="absolute inset-0 h-full w-full animate-fade-in cursor-default bg-blue-900/25"
       />
       <div
         role="dialog"

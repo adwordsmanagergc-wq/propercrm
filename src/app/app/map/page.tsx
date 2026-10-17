@@ -4,6 +4,7 @@ import { MapBoard } from '@/components/admin/MapBoard';
 import { requireStaff } from '@/lib/auth';
 import { getJobsForDay } from '@/lib/db/jobs';
 import { signPhotoUrls } from '@/lib/db/photos';
+import { startFor } from '@/lib/db/routes';
 import { getCleaners, getCompany } from '@/lib/db/staff';
 import { photoPaths, toJobView } from '@/lib/db/views';
 import { todayInTimezone } from '@/lib/format';
@@ -35,10 +36,14 @@ export default async function MapPage({
     .filter((job) => job.status !== 'cancelled')
     .sort((a, b) => a.sequence - b.sequence);
 
-  const start =
+  const yard =
     typeof company?.start_lat === 'number' && typeof company?.start_lng === 'number'
       ? { lat: company.start_lat, lng: company.start_lng }
       : null;
+  // One cleaner picked: their day runs from their own start point.
+  const cleaner = cleanerId ? staff.find((person) => person.id === cleanerId) : undefined;
+  const start = startFor(cleaner, yard);
+  const fromHome = Boolean(cleaner && start !== yard);
 
   return (
     <div className="space-y-5">
@@ -46,9 +51,11 @@ export default async function MapPage({
         <div>
           <h1 className="text-xl font-semibold tracking-tight">Round map</h1>
           <p className="text-grey-500">
-            {start
-              ? 'Numbered in driving order from the yard.'
-              : 'Set a start postcode in Settings to order the route from the yard.'}
+            {fromHome
+              ? `Numbered in driving order from ${cleaner?.full_name.split(' ')[0]}'s start point.`
+              : start
+                ? 'Numbered in driving order from the yard.'
+                : 'Set a start postcode in Settings to order the route from the yard.'}
           </p>
         </div>
 

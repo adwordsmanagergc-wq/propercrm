@@ -7,7 +7,8 @@ export type ButtonSize = 'sm' | 'md' | 'lg' | 'xl';
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: 'bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 shadow-card',
-  secondary: 'bg-white text-blue-700 border border-blue-200 hover:bg-blue-50 active:bg-blue-100',
+  secondary:
+    'bg-white text-grey-900 border border-grey-200 hover:border-blue-300 hover:bg-blue-50 active:bg-blue-100',
   ghost: 'bg-transparent text-grey-500 hover:bg-blue-50 hover:text-blue-700',
   danger: 'bg-white text-danger border border-grey-200 hover:bg-blue-50',
   success: 'bg-success text-white hover:brightness-95 active:brightness-90 shadow-card',
@@ -27,7 +28,7 @@ const buttonClasses = (
   className?: string,
 ) =>
   cn(
-    'inline-flex items-center justify-center whitespace-nowrap rounded-btn font-semibold transition-colors',
+    'inline-flex items-center justify-center whitespace-nowrap rounded-btn font-semibold transition-[color,background-color,border-color,transform] active:translate-y-px',
     'disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none',
     'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700',
     VARIANTS[variant],

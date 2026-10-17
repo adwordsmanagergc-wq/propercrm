@@ -5,7 +5,9 @@ export async function getStaff() {
   const supabase = createClient();
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, full_name, role, phone, is_active, created_at')
+    .select(
+      'id, full_name, role, phone, is_active, created_at, start_address, start_postcode, start_lat, start_lng',
+    )
     .order('full_name');
 
   if (error) throw new Error(error.message);

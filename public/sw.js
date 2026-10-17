@@ -8,7 +8,7 @@
  * session. A Background Sync registration nudges the page to drain when the
  * signal returns.
  */
-const VERSION = 'proper-crm-v1';
+const VERSION = 'proper-crm-v2';
 const SHELL_CACHE = `${VERSION}-shell`;
 const DATA_CACHE = `${VERSION}-data`;
 

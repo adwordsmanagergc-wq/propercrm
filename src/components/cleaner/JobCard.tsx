@@ -32,7 +32,7 @@ export function JobCard({ job, index }: { job: MyJobRow; index: number }) {
             done
               ? 'flex h-11 w-11 shrink-0 items-center justify-center rounded-pill bg-success text-white'
               : missed
-                ? 'ring-danger/30 flex h-11 w-11 shrink-0 items-center justify-center rounded-pill bg-white text-danger ring-2'
+                ? 'flex h-11 w-11 shrink-0 items-center justify-center rounded-pill bg-white text-danger ring-2 ring-danger/30'
                 : 'flex h-11 w-11 shrink-0 items-center justify-center rounded-pill bg-blue-100 text-lg font-semibold tabular-nums text-blue-700'
           }
         >

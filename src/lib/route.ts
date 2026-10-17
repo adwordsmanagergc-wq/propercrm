@@ -80,3 +80,77 @@ export function routeLengthKm(
   }
   return total;
 }
+
+type Located<T> = T & { lat: number; lng: number };
+
+/**
+ * Untangles a route with 2-opt: wherever reversing a stretch of stops makes
+ * the drive shorter, reverse it, and repeat until nothing improves. It fixes
+ * the crossed-over legs that nearest-neighbour leaves behind, typically
+ * shaving 10–20% off a day. The start is fixed and the route is open, since
+ * a cleaner finishes wherever their last job is.
+ */
+export function twoOpt<T extends RoutePoint>(
+  route: Located<T>[],
+  start: { lat: number; lng: number } | null,
+  maxPasses = 50,
+): Located<T>[] {
+  if (route.length < 3) return route;
+  const best = [...route];
+  const at = (i: number) => (i < 0 ? start : best[i]) ?? null;
+  const dist = (a: { lat: number; lng: number } | null, b: { lat: number; lng: number } | null) =>
+    a && b ? haversineKm(a, b) : 0;
+
+  for (let pass = 0; pass < maxPasses; pass += 1) {
+    let improved = false;
+    for (let i = 0; i < best.length - 1; i += 1) {
+      for (let k = i + 1; k < best.length; k += 1) {
+        // Reverse best[i..k]: swap edges (i-1 → i) and (k → k+1) for
+        // (i-1 → k) and (i → k+1). The last stop has no onward edge.
+        const before = dist(at(i - 1), at(i)) + (k + 1 < best.length ? dist(at(k), at(k + 1)) : 0);
+        const after = dist(at(i - 1), at(k)) + (k + 1 < best.length ? dist(at(i), at(k + 1)) : 0);
+        if (after + 1e-9 < before) {
+          best.splice(i, k - i + 1, ...best.slice(i, k + 1).reverse());
+          improved = true;
+        }
+      }
+    }
+    if (!improved) break;
+  }
+  return best;
+}
+
+/** The shortest drive we can find: nearest-neighbour, then untangled. */
+export function bestRoute<T extends RoutePoint>(
+  points: T[],
+  start: { lat: number; lng: number } | null,
+): T[] {
+  const rough = nearestNeighbourOrder(points, start);
+  const locatable = rough.filter(hasCoords);
+  const unlocatable = rough.filter((p) => !hasCoords(p));
+  return [...twoOpt(locatable, start), ...unlocatable];
+}
+
+export interface DayStop extends RoutePoint {
+  status: string;
+}
+
+/**
+ * Plans a day that may already be under way. Finished and on-site jobs keep
+ * their place at the front; the rest are routed from wherever the cleaner is
+ * now (the last finished job), or from their start point if they have not
+ * begun. Skipped and cancelled jobs go to the back.
+ */
+export function planDay<T extends DayStop>(
+  stops: T[],
+  start: { lat: number; lng: number } | null,
+): T[] {
+  const done = stops.filter((s) => s.status === 'completed' || s.status === 'in_progress');
+  const todo = stops.filter((s) => s.status === 'scheduled');
+  const parked = stops.filter((s) => !done.includes(s) && !todo.includes(s));
+
+  const last = [...done].reverse().find(hasCoords);
+  const from = last ? { lat: last.lat, lng: last.lng } : start;
+
+  return [...done, ...bestRoute(todo, from), ...parked];
+}

@@ -56,6 +56,7 @@ export type CompanyRow = {
   tpl_quote: string | null;
   stripe_account_id: string | null;
   stripe_charges_enabled: boolean;
+  auto_route: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -67,6 +68,10 @@ export type ProfileRow = {
   full_name: string;
   phone: string | null;
   is_active: boolean;
+  start_address: string | null;
+  start_postcode: string | null;
+  start_lat: number | null;
+  start_lng: number | null;
   created_at: string;
   updated_at: string;
 };
@@ -336,6 +341,8 @@ export type MyCompanyRow = {
   working_days: number[];
   plan: string;
   trial_ends_at: string;
+  start_lat: number | null;
+  start_lng: number | null;
 };
 
 /**
@@ -485,6 +492,7 @@ export type Database = {
         };
         Returns: string;
       };
+      reorder_my_day: { Args: { p_date: string; p_jobs: string[] }; Returns: number };
       my_stats: {
         Args: Record<string, never>;
         Returns: {

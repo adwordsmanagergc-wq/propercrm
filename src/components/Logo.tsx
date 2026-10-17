@@ -1,19 +1,22 @@
+/* eslint-disable @next/next/no-img-element */
 import { cn } from '@/lib/cn';
 
-/** The window-pane mark, matched to the app icon. */
+/**
+ * The squeegee-and-pane mark, the same artwork as the app icon. Decorative:
+ * every link it sits in carries its own label. A plain <img>
+ * rather than next/image so it renders identically on the offline shell.
+ */
 export function LogoMark({ className }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 32 32"
-      className={cn('h-8 w-8', className)}
-      role="img"
-      aria-label="Proper CRM"
-    >
-      <rect width="32" height="32" rx="8" fill="var(--blue-500)" />
-      <rect x="7" y="7" width="18" height="18" rx="2.5" stroke="white" strokeWidth="2.2" />
-      <path d="M16 7v18M7 16h18" stroke="white" strokeWidth="2.2" />
-      <path d="M9.5 22.5 22.5 9.5" stroke="white" strokeOpacity="0.55" strokeWidth="2.2" />
-    </svg>
+    <img
+      src="/logo-mark.png"
+      alt=""
+      aria-hidden="true"
+      width={32}
+      height={32}
+      className={cn('h-8 w-8 shrink-0 select-none', className)}
+      draggable={false}
+    />
   );
 }
 
@@ -21,8 +24,8 @@ export function Wordmark({ className }: { className?: string }) {
   return (
     <span className={cn('flex items-center gap-2.5', className)}>
       <LogoMark />
-      <span className="whitespace-nowrap text-lg font-semibold tracking-tight text-grey-900">
-        Proper CRM
+      <span className="whitespace-nowrap text-lg font-extrabold tracking-tight text-grey-900">
+        Proper <span className="text-blue-500">CRM</span>
       </span>
     </span>
   );
